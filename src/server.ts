@@ -95,7 +95,7 @@ export function createServer(client: HireLayerClient): McpServer {
     {
       title: 'Extract job criteria',
       description:
-        'Turn a job description (any language) into weighted matching criteria (matching_criteria[]), each with a weight from 1 to 3, a mandatory flag and a rationale (labels and rationales are written in French). Feed the result to match_candidate. Costs 1 HireLayer credit.',
+        'Turn a job description (any language) into weighted matching criteria (matching_criteria[]), each with an ID, a weight from 1 to 3, a mandatory flag and a rationale (labels and rationales are written in French). Costs 1 HireLayer credit.',
       inputSchema: {
         job_text: z.string().min(1).max(50000).describe('Full job description.'),
       },
@@ -109,14 +109,14 @@ export function createServer(client: HireLayerClient): McpServer {
     {
       title: 'Match a candidate to a job',
       description:
-        'Score one candidate against a job: returns a score between 0 and 1, a summary and an explained evaluation of each criterion (written in French). Use the criteria from extract_job_criteria and the resume text from parse_resume (info_resume.text). Costs 1 HireLayer credit.',
+        'Score one candidate against a job from the job description, the resume as plain text and the criteria to evaluate: returns a score between 0 and 1, a summary and an explained evaluation of each criterion (written in French). Costs 1 HireLayer credit.',
       inputSchema: {
         job_text: z.string().min(1).max(50000).describe('Job description.'),
         candidate_text: z.string().min(1).max(50000).describe('Resume as plain text.'),
         matching_criteria: z
           .array(criterion)
           .default([])
-          .describe('Criteria to evaluate, usually from extract_job_criteria.'),
+          .describe('Criteria to evaluate, in the format returned by extract_job_criteria.'),
       },
       annotations: annotations('Match a candidate to a job'),
     },

@@ -1,8 +1,8 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "hirelayer",
-  "version": "1.1.0",
-  "description": "Resume and CV parsing, job criteria extraction, candidate matching and ranking, and skills normalization for recruiting with HireLayer.",
+  "version": "1.1.1",
+  "description": "Resume and CV parsing, job criteria extraction, candidate matching and ranking, and skills normalization for recruiters, hiring managers and HR tech teams.",
   "author": {
     "name": "HireLayer",
     "email": "contact@hirelayer.co",
@@ -14,21 +14,27 @@
   "keywords": [
     "resume parser",
     "cv parser",
-    "recruiting",
+    "resume screening",
+    "candidate screening",
     "candidate matching",
     "candidate ranking",
+    "job matching",
+    "recruiting",
+    "recruitment",
+    "hiring",
+    "talent acquisition",
     "ats",
     "hr tech",
-    "hiring"
+    "skills taxonomy"
   ],
   "extensions": {
     "com.openai": {
       "interface": {
         "displayName": "HireLayer",
         "shortDescription": "Parse resumes, rank candidates",
-        "longDescription": "HireLayer gives ChatGPT five recruiting tools built on the HireLayer APIs.\n\n- Parse resumes and CVs: PDF, Word, images and scans become structured data (contact details, work experience, education, languages, skills and the full text). Attach a resume in the conversation or share a public link.\n- Extract job criteria: a job description becomes weighted criteria, with must-haves flagged.\n- Match a candidate to a job: a score from 0 to 1 with an explanation for every criterion.\n- Rank candidates: order up to 10 candidates for the same job in one call, with a rationale for each.\n- Normalize skills: map free-text skills in English or French to a skills taxonomy.\n\nFor recruiters, hiring managers and HR tech teams. Ask in plain language, for example \"Screen these three resumes against our Senior React job and tell me who to interview\", and ChatGPT chains the tools and explains the result.\n\nSign in with your HireLayer account; the free plan includes 50 credits a month, no card required. Each successful tool call uses 1 credit. The tools only read and analyse the data you send; they never change anything in your systems. Analysis text (criteria, explanations) is written in French and ChatGPT translates it. Scores support human hiring decisions; they never replace them. You can disconnect at any time in Dashboard → API keys.",
+        "longDescription": "Screen candidates faster with HireLayer's recruiting tools for resume parsing, candidate matching and candidate ranking.\n\n- Parse resumes and CVs: PDF, Word, images and scanned documents become structured candidate data (contact details, work experience, education, languages, skills and the full text). Attach a resume in the conversation or share a public link.\n- Extract job criteria: a job description becomes weighted hiring criteria, with must-have requirements flagged.\n- Match a candidate to a job: get a fit score from 0 to 1 with an explanation for every criterion, so you see strengths and gaps at a glance.\n- Rank candidates: order up to 10 candidates for the same role in one step, each with a rationale.\n- Normalize skills: map free-text skills in English or French to a skills taxonomy with stable IDs, useful for ATS and HR data.\n\nBuilt for recruiters, hiring managers, talent acquisition teams and HR tech developers. Ask in plain language, for example \"Screen these three resumes against our Senior React job and tell me who to interview\" or \"Which mandatory criteria does this candidate miss?\", and ChatGPT chains the tools and explains the result.\n\nConnect with your HireLayer account. The tools only read and analyse the resumes and job descriptions you send; they never change anything in your systems. Analysis text (criteria, explanations) is written in French and ChatGPT translates it. Scores support human hiring decisions; they never replace them. You can disconnect at any time from your HireLayer dashboard.",
         "developerName": "HireLayer",
-        "category": "Productivity",
+        "category": "Business & Operations",
         "capabilities": [
           "Parse resumes and CVs",
           "Extract job criteria",
@@ -103,14 +109,14 @@
           ]
         },
         "commerce": false,
-        "commerce_description": "HireLayer does not sell products or process payments in ChatGPT. Tool calls use the credits of the user's HireLayer plan."
+        "commerce_description": "HireLayer does not sell products or process payments in ChatGPT."
       },
       "publication": {
-        "release_notes": "First release: resume and CV parsing (including files attached in ChatGPT), job criteria extraction, candidate matching and ranking with explanations, and skills normalization. Sign in with a HireLayer account; the free plan includes 50 credits a month.",
+        "release_notes": "First release: resume and CV parsing (including files attached in ChatGPT), job criteria extraction, candidate matching and ranking with explanations, and skills normalization.",
         "translations": {
           "fr-FR": {
             "subtitle": "Analyse de CV et classement",
-            "description": "HireLayer donne à ChatGPT cinq outils de recrutement : analyse de CV (PDF, Word, images, scans), extraction des critères d'une offre, score d'un candidat par critère, classement de jusqu'à 10 candidats et normalisation des compétences. Connectez votre compte HireLayer : l'offre gratuite inclut 50 crédits par mois, sans carte bancaire. Les outils lisent et analysent uniquement les données envoyées ; les scores aident la décision humaine sans la remplacer."
+            "description": "Triez vos candidats plus vite avec les outils de recrutement HireLayer : analyse de CV (PDF, Word, images, scans), extraction des critères d'une offre d'emploi, score d'adéquation candidat-poste expliqué critère par critère, classement de jusqu'à 10 candidats et normalisation des compétences. Pour les recruteurs, managers et équipes RH. Les outils lisent et analysent uniquement les CV et offres envoyés ; les scores aident la décision humaine sans la remplacer."
           }
         }
       }
