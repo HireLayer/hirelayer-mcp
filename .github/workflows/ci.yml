@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [20, 22, 24]
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci
+      - run: npm test
+
+  metadata:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Versions match across package.json and server.json
+        run: |
+          pkg=$(jq -r .version package.json)
+          jq -e --arg v "$pkg" '.version == $v and (.packages | all(.version == $v))' server.json > /dev/null \
+            || { echo "server.json versions must equal package.json version $pkg"; exit 1; }
+          jq -e --arg n "$(jq -r .name server.json)" '.mcpName == $n' package.json > /dev/null \
+            || { echo "package.json mcpName must equal server.json name"; exit 1; }
+      - name: server.json is valid for the MCP Registry
+        run: |
+          curl -sSL "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_linux_amd64.tar.gz" | tar xz mcp-publisher
+          ./mcp-publisher validate server.json

@@ -1,0 +1,29 @@
+Alex Morgan
+Senior Front-End Engineer
+Lyon, France · alex.morgan@example.com · +33 6 12 34 56 78
+
+SUMMARY
+Front-end engineer with 8 years of experience building web products in React and TypeScript. I lead small teams and care about accessibility and performance.
+
+EXPERIENCE
+Lead Front-End Engineer, Medisoft (Lyon) — 2022 to present
+- Lead a team of 4 developers on a React 18 + TypeScript appointment platform for hospitals.
+- Built the component library (Storybook) used by 3 product teams.
+- Cut the main page load time by 45% with code splitting and caching.
+- Took the product to WCAG 2.1 AA compliance.
+
+Front-End Developer, Kiwi Commerce (Paris) — 2018 to 2022
+- Built e-commerce front ends with React, Redux and Next.js.
+- Set up unit and end-to-end tests with Jest and Playwright.
+
+Web Developer, Agence Pixel (Paris) — 2016 to 2018
+- Built websites with JavaScript, jQuery and PHP.
+
+EDUCATION
+MSc Computer Science, INSA Lyon — 2016
+
+SKILLS
+React, TypeScript, Next.js, Redux, GraphQL, Jest, Playwright, Storybook, accessibility, mentoring
+
+LANGUAGES
+French (native), English (fluent, C1)

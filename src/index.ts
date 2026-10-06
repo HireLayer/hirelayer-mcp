@@ -1,7 +1,12 @@
 #!/usr/bin/env node
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js'
-import { HireLayerClient } from './client.js'
+import { HireLayerClient, VERSION } from './client.js'
 import { createServer } from './server.js'
+
+if (process.argv.includes('--version')) {
+  console.log(VERSION)
+  process.exit(0)
+}
 
 const apiKey = process.env.HIRELAYER_API_KEY
 if (!apiKey) {

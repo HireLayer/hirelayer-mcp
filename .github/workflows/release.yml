@@ -1,0 +1,48 @@
+name: Release
+
+# Push a tag such as v1.2.0 after bumping the version in package.json and server.json.
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    environment: release
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+          cache: npm
+
+      - name: Tag matches package.json and server.json
+        run: |
+          tag="${GITHUB_REF_NAME#v}"
+          test "$(jq -r .version package.json)" = "$tag"
+          jq -e --arg v "$tag" '.version == $v and (.packages | all(.version == $v))' server.json > /dev/null
+
+      - run: npm ci
+      - run: npm test
+
+      # Uses npm trusted publishing (OIDC) when it is set up on npmjs.com, NPM_TOKEN otherwise.
+      - name: Publish to npm
+        run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Publish to the MCP Registry
+        run: |
+          curl -sSL "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_linux_amd64.tar.gz" | tar xz mcp-publisher
+          ./mcp-publisher login dns --domain hirelayer.co --private-key "${{ secrets.MCP_REGISTRY_PRIVATE_KEY }}"
+          ./mcp-publisher publish
+
+      - name: Create the GitHub release
+        uses: softprops/action-gh-release@v3
+        with:
+          generate_release_notes: true

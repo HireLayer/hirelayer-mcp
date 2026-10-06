@@ -1,0 +1,24 @@
+Camille Durand
+Développeuse Front-End
+Bordeaux, France · camille.durand@example.com
+
+PROFIL
+Développeuse front-end depuis 6 ans, spécialisée Vue.js. Intérêt pour l'accessibilité et le design system.
+
+EXPÉRIENCE
+Développeuse Front-End Senior, Ocean Data (Bordeaux) — 2021 à aujourd'hui
+- Développement d'une application SaaS d'analyse en Vue 3 et TypeScript.
+- Mise en place des tests avec Vitest et Cypress.
+- Création du design system de l'entreprise.
+
+Développeuse Front-End, WebFactory (Bordeaux) — 2019 à 2021
+- Intégration de sites en Vue.js et Nuxt.
+
+FORMATION
+Licence professionnelle Développement web, Université de Bordeaux — 2019
+
+COMPÉTENCES
+Vue.js, Nuxt, TypeScript, JavaScript, Vitest, Cypress, accessibilité, Figma
+
+LANGUES
+Français (langue maternelle), anglais (courant)

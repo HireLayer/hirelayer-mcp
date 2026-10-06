@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: HireLayer API documentation
+    url: https://hirelayer.co/api-docs
+    about: Questions about the REST API, plans or credits.
+  - name: Contact HireLayer
+    url: mailto:contact@hirelayer.co
+    about: Account, billing and partnership questions.
