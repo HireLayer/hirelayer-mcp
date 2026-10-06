@@ -18,6 +18,7 @@ Typical workflows:
 - Normalize skills: resolve_skills maps free text in French or English to taxonomy skills.
 
 Notes:
+- The text HireLayer writes (criteria labels and rationales, match summaries and explanations, ranking rationales) is in French: translate it when you answer the user in another language.
 - info_resume.text can reach 100,000 characters; match_candidate and rank_candidates accept 50,000 characters per resume, so truncate longer texts.
 - Pass do_not_store_data: true to parse_resume when the user does not want HireLayer to keep the file.
 - Every successful tool call costs 1 HireLayer credit. Resume parsing usually takes about 35 seconds.`
@@ -89,7 +90,7 @@ export function createServer(client: HireLayerClient): McpServer {
     {
       title: 'Extract job criteria',
       description:
-        'Turn a job description (any language) into weighted matching criteria (matching_criteria[]), each with a weight from 1 to 3, a mandatory flag and a rationale. Feed the result to match_candidate. Costs 1 HireLayer credit.',
+        'Turn a job description (any language) into weighted matching criteria (matching_criteria[]), each with a weight from 1 to 3, a mandatory flag and a rationale (labels and rationales are written in French). Feed the result to match_candidate. Costs 1 HireLayer credit.',
       inputSchema: {
         job_text: z.string().min(1).max(50000).describe('Full job description.'),
       },
@@ -103,7 +104,7 @@ export function createServer(client: HireLayerClient): McpServer {
     {
       title: 'Match a candidate to a job',
       description:
-        'Score one candidate against a job: returns a score between 0 and 1, a summary and an explained evaluation of each criterion. Use the criteria from extract_job_criteria and the resume text from parse_resume (info_resume.text). Costs 1 HireLayer credit.',
+        'Score one candidate against a job: returns a score between 0 and 1, a summary and an explained evaluation of each criterion (written in French). Use the criteria from extract_job_criteria and the resume text from parse_resume (info_resume.text). Costs 1 HireLayer credit.',
       inputSchema: {
         job_text: z.string().min(1).max(50000).describe('Job description.'),
         candidate_text: z.string().min(1).max(50000).describe('Resume as plain text.'),
@@ -122,7 +123,7 @@ export function createServer(client: HireLayerClient): McpServer {
     {
       title: 'Rank candidates for a job',
       description:
-        'Rank up to 10 candidates against the same job description, from their resume texts: returns each candidate with a rank, a score between 0 and 1 and a rationale. Costs 1 HireLayer credit per call, whatever the number of candidates.',
+        'Rank up to 10 candidates against the same job description, from their resume texts: returns each candidate with a rank, a score between 0 and 1 and a rationale (written in French). Costs 1 HireLayer credit per call, whatever the number of candidates.',
       inputSchema: {
         job_text: z.string().min(1).max(50000).describe('Job description.'),
         candidates: z

@@ -233,19 +233,21 @@ flowchart LR
 ```json
 {
   "score": 0.89,
-  "summary": "Strong fit: React, TypeScript and the required experience are demonstrated. English level to confirm.",
+  "summary": "Profil très aligné : React, TypeScript et l’expérience demandée sont démontrés. Le niveau d’anglais reste à confirmer.",
   "evaluated_criteria": [
     {
       "id": "crit_1",
-      "label": "React expertise",
+      "label": "Maîtrise de React",
       "weight": 3,
       "is_mandatory": true,
       "match_status": "ideal",
-      "match_explanation": "Has led a React team on a production platform since 2022."
+      "match_explanation": "Le CV décrit une équipe React dirigée depuis 2022 sur une plateforme en production."
     }
   ]
 }
 ```
+
+Criteria labels, rationales, summaries and explanations are written in French. Your assistant translates them when it answers you in another language.
 
 </details>
 
@@ -315,8 +317,11 @@ HIRELAYER_API_KEY=your-api-key npx @modelcontextprotocol/inspector npx -y hirela
 **Is HireLayer an ATS?**
 No. HireLayer provides the AI building blocks of recruiting software: resume parsing, matching, ranking and skills. Use them on their own through MCP, or plug them into your ATS or HR tech product through the [REST API](https://hirelayer.co/api-docs).
 
+**Which language are the results in?**
+The text that HireLayer writes (criteria labels and rationales, match summaries and explanations, ranking rationales) is in French; your assistant translates it when it answers in another language. Skills resolution returns French or English labels.
+
 **Which resume languages are supported?**
-The parser detects the main language of each resume and returns it in `info_resume.language`. Skills resolution returns French or English labels.
+The parser detects the main language of each resume and returns it in `info_resume.language`.
 
 **Can I use the REST API directly?**
 Yes. See the [API reference](https://hirelayer.co/api-docs), the [OpenAPI spec](https://hirelayer.co/openapi.json) and [`llms.txt`](https://hirelayer.co/llms.txt) for agents.
