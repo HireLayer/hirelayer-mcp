@@ -1,0 +1,52 @@
+{
+  "name": "hirelayer-mcp",
+  "version": "0.1.0",
+  "mcpName": "io.github.louisdesc/hirelayer-mcp",
+  "description": "MCP server for the HireLayer recruiting APIs: parse resumes, extract job criteria, match and rank candidates, resolve skills.",
+  "type": "module",
+  "bin": {
+    "hirelayer-mcp": "dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepublishOnly": "npm run build",
+    "test": "npm run build && node --test test/*.test.mjs"
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "resume-parser",
+    "cv-parser",
+    "recruiting",
+    "ats",
+    "hiring",
+    "candidate-matching",
+    "hirelayer"
+  ],
+  "homepage": "https://hirelayer.co",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/louisdesc/hirelayer-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/louisdesc/hirelayer-mcp/issues"
+  },
+  "author": "Louis Desclous",
+  "license": "MIT",
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.32.1",
+    "zod": "^4.6.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "typescript": "^5.9.3"
+  }
+}
