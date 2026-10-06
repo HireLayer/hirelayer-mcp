@@ -30,11 +30,11 @@ jobs:
       - run: npm ci
       - run: npm test
 
-      # Uses npm trusted publishing (OIDC) when it is set up on npmjs.com, NPM_TOKEN otherwise.
+      # npm trusted publishing (OIDC): no token. The publisher set up on
+      # npmjs.com must name HireLayer/hirelayer-mcp, release.yml and the
+      # release environment, with this exact case.
       - name: Publish to npm
-        run: npm publish --provenance --access public
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: npm publish --provenance --access public --loglevel verbose
 
       - name: Publish to the MCP Registry
         run: |
