@@ -108,7 +108,7 @@
             }
           ]
         },
-        "demo_recording_url": "https://github.com/HireLayer/hirelayer-mcp/blob/main/assets/hirelayer-chatgpt-demo.mp4",
+        "demo_recording_url": "https://cdn.jsdelivr.net/gh/HireLayer/hirelayer-mcp@4e4ef07/assets/hirelayer-chatgpt-demo.mp4",
         "commerce": false,
         "commerce_description": "HireLayer does not sell products or process payments in ChatGPT."
       },
