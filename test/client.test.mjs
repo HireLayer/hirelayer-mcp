@@ -64,3 +64,26 @@ test('parseResume requires exactly one source', async () => {
   await assert.rejects(client.parseResume({}), /exactly one/)
   await assert.rejects(client.parseResume({ filePath: 'a', fileUrl: 'https://x.test/a.pdf' }), /exactly one/)
 })
+
+test('retries once on 502 and 503, never on 4xx', async () => {
+  const { calls, fetch } = recorder([
+    { status: 503, body: 'busy' },
+    { body: '{"skills":[]}' },
+    { status: 400, body: '{"error":"bad"}' },
+  ])
+  const client = new HireLayerClient({ apiKey: 'k', fetch, retryDelayMs: 0 })
+  assert.deepEqual(await client.resolveSkills('Excel'), { skills: [] })
+  assert.equal(calls.length, 2)
+  await assert.rejects(client.resolveSkills('Excel'), /400/)
+  assert.equal(calls.length, 3)
+})
+
+test('a second 502 is reported, not retried again', async () => {
+  const { calls, fetch } = recorder([
+    { status: 502, body: 'down' },
+    { status: 502, body: 'still down' },
+  ])
+  const client = new HireLayerClient({ apiKey: 'k', fetch, retryDelayMs: 0 })
+  await assert.rejects(client.extractJobCriteria('x'), (error) => error.status === 502)
+  assert.equal(calls.length, 2)
+})

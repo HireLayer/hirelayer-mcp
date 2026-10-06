@@ -1,24 +1,35 @@
 {
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
-  "name": "io.github.louisdesc/hirelayer-mcp",
+  "name": "co.hirelayer/hirelayer",
   "title": "HireLayer",
-  "description": "Parse resumes, extract job criteria, match and rank candidates, and resolve skills with HireLayer.",
+  "description": "Resume and CV parsing, candidate matching and ranking for recruiting and ATS AI agents.",
   "websiteUrl": "https://hirelayer.co",
   "repository": {
-    "url": "https://github.com/louisdesc/hirelayer-mcp",
+    "url": "https://github.com/hirelayer/hirelayer-mcp",
     "source": "github"
   },
-  "version": "0.1.0",
+  "icons": [
+    {
+      "src": "https://hirelayer.co/favicon/android-chrome-512x512.png",
+      "mimeType": "image/png",
+      "sizes": [
+        "512x512"
+      ]
+    }
+  ],
+  "version": "1.0.0",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "hirelayer-mcp",
-      "version": "0.1.0",
-      "transport": { "type": "stdio" },
+      "version": "1.0.0",
+      "transport": {
+        "type": "stdio"
+      },
       "environmentVariables": [
         {
           "name": "HIRELAYER_API_KEY",
-          "description": "HireLayer API key (free plan: 50 credits a month at https://hirelayer.co)",
+          "description": "HireLayer API key. Free plan with 50 credits a month at https://hirelayer.co",
           "isRequired": true,
           "isSecret": true,
           "format": "string"

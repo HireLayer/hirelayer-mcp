@@ -1,0 +1,23 @@
+Sam Lee
+Full-Stack Developer
+Berlin, Germany · sam.lee@example.com
+
+PROFILE
+Full-stack developer with 4 years of experience, mostly Node.js back ends with some React.
+
+EXPERIENCE
+Full-Stack Developer, Parcelo (Berlin) — 2022 to present
+- Build REST APIs in Node.js and PostgreSQL for a delivery tracking product.
+- Maintain the React admin dashboard (JavaScript, moving to TypeScript).
+
+Junior Developer, Stackwise (Berlin) — 2021 to 2022
+- Maintained internal tools in Vue.js and Express.
+
+EDUCATION
+BSc Computer Science, TU Berlin — 2021
+
+SKILLS
+Node.js, Express, PostgreSQL, React, Vue.js, JavaScript, Docker
+
+LANGUAGES
+English (native), German (B2)

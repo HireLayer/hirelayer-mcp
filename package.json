@@ -1,8 +1,8 @@
 {
   "name": "hirelayer-mcp",
-  "version": "0.1.0",
-  "mcpName": "io.github.louisdesc/hirelayer-mcp",
-  "description": "MCP server for the HireLayer recruiting APIs: parse resumes, extract job criteria, match and rank candidates, resolve skills.",
+  "version": "1.0.0",
+  "mcpName": "co.hirelayer/hirelayer",
+  "description": "Official HireLayer MCP server: resume and CV parsing, job criteria extraction, candidate matching and ranking, and skills normalization for AI agents in Claude, Cursor, VS Code and other MCP clients.",
   "type": "module",
   "bin": {
     "hirelayer-mcp": "dist/index.js"
@@ -15,31 +15,46 @@
   "scripts": {
     "build": "tsc",
     "prepublishOnly": "npm run build",
-    "test": "npm run build && node --test test/*.test.mjs"
+    "test": "npm run build && node --test test/*.test.mjs",
+    "inspect": "npm run build && npx @modelcontextprotocol/inspector node dist/index.js"
   },
   "keywords": [
     "mcp",
+    "mcp-server",
     "model-context-protocol",
+    "hirelayer",
     "resume-parser",
     "cv-parser",
-    "recruiting",
-    "ats",
-    "hiring",
+    "resume-parsing",
     "candidate-matching",
-    "hirelayer"
+    "candidate-ranking",
+    "job-matching",
+    "resume-screening",
+    "recruiting",
+    "recruitment",
+    "ats",
+    "hr-tech",
+    "hiring",
+    "talent-acquisition",
+    "ai-agents",
+    "claude",
+    "cursor"
   ],
-  "homepage": "https://hirelayer.co",
+  "homepage": "https://github.com/hirelayer/hirelayer-mcp#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/louisdesc/hirelayer-mcp.git"
+    "url": "git+https://github.com/hirelayer/hirelayer-mcp.git"
   },
   "bugs": {
-    "url": "https://github.com/louisdesc/hirelayer-mcp/issues"
+    "url": "https://github.com/hirelayer/hirelayer-mcp/issues"
   },
-  "author": "Louis Desclous",
+  "author": "HireLayer <contact@hirelayer.co> (https://hirelayer.co)",
   "license": "MIT",
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.32.1",
