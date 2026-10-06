@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented here. The project follows [Semantic Versioning](https://semver.org).
 
+## 1.1.0 - 2026-10-06
+
+- Hosted server at `https://hirelayer.co/mcp`: connect Claude, ChatGPT, Cursor, VS Code or Codex with the URL and a HireLayer sign-in (OAuth), no API key needed. Listed as a remote in the MCP Registry.
+- README and one-click installs point to the hosted server; the npx server stays available for local files.
+
 ## 1.0.0 - 2026-10-06
 
 First public release.
