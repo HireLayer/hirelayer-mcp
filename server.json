@@ -5,7 +5,7 @@
   "description": "Resume and CV parsing, candidate matching and ranking for recruiting and ATS AI agents.",
   "websiteUrl": "https://hirelayer.co",
   "repository": {
-    "url": "https://github.com/hirelayer/hirelayer-mcp",
+    "url": "https://github.com/HireLayer/hirelayer-mcp",
     "source": "github"
   },
   "icons": [

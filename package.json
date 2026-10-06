@@ -40,13 +40,13 @@
     "claude",
     "cursor"
   ],
-  "homepage": "https://github.com/hirelayer/hirelayer-mcp#readme",
+  "homepage": "https://github.com/HireLayer/hirelayer-mcp#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/hirelayer/hirelayer-mcp.git"
+    "url": "git+https://github.com/HireLayer/hirelayer-mcp.git"
   },
   "bugs": {
-    "url": "https://github.com/hirelayer/hirelayer-mcp/issues"
+    "url": "https://github.com/HireLayer/hirelayer-mcp/issues"
   },
   "author": "HireLayer <contact@hirelayer.co> (https://hirelayer.co)",
   "license": "MIT",
