@@ -52,7 +52,7 @@ Use it to screen applicants in a chat, build a recruiting agent, enrich an ATS, 
 2. **Add the server to your client.** Click a one-click install button above, or copy a config from [the next section](#install-in-your-mcp-client).
 3. **Ask your assistant.** For example: *"Parse ~/Downloads/resume.pdf and summarize the candidate."*
 
-To try it without your own data, use the sample job and resumes in [`examples/`](examples).
+To try it without your own data, use the sample job and resumes in [`examples/`](examples). The repository ships a [`.mcp.json`](.mcp.json): clone it, export `HIRELAYER_API_KEY`, open the folder in Claude Code or Cursor and the server is offered automatically.
 
 Requires Node.js 20 or later, because the server runs with `npx`.
 
