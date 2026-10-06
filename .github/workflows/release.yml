@@ -36,6 +36,16 @@ jobs:
       - name: Publish to npm
         run: npm publish --provenance --access public --loglevel verbose
 
+      # The registry checks that the version exists on npm, which can take a
+      # minute to become visible after publishing.
+      - name: Wait for the npm version
+        run: |
+          for i in $(seq 1 30); do
+            npm view "hirelayer-mcp@${GITHUB_REF_NAME#v}" version && exit 0
+            sleep 10
+          done
+          exit 1
+
       - name: Publish to the MCP Registry
         run: |
           curl -sSL "https://github.com/modelcontextprotocol/registry/releases/latest/download/mcp-publisher_linux_amd64.tar.gz" | tar xz mcp-publisher
