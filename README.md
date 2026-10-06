@@ -6,16 +6,18 @@
 
 **Resume parsing, candidate matching and candidate ranking for AI agents.**
 
-The official [Model Context Protocol](https://modelcontextprotocol.io) server for [HireLayer](https://hirelayer.co). Parse resumes and CVs, turn job descriptions into criteria, then score and rank candidates from Claude, Cursor, VS Code, Codex or any MCP client.
+The official [Model Context Protocol](https://modelcontextprotocol.io) server for [HireLayer](https://hirelayer.co). Parse resumes and CVs, turn job descriptions into criteria, then score and rank candidates from Claude, ChatGPT, Cursor, VS Code, Codex or any MCP client.
+
+**Server URL: `https://hirelayer.co/mcp`** · sign in with your HireLayer account, no API key to copy.
 
 [![npm version](https://img.shields.io/npm/v/hirelayer-mcp?color=4f46e5)](https://www.npmjs.com/package/hirelayer-mcp)
 [![CI](https://github.com/hirelayer/hirelayer-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/hirelayer/hirelayer-mcp/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
 [![MCP](https://img.shields.io/badge/MCP-compatible-4f46e5)](https://modelcontextprotocol.io)
 
-[![Install in Cursor](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/install-mcp?name=hirelayer&config=eyJjb21tYW5kIjoibnB4IiwiYXJncyI6WyIteSIsImhpcmVsYXllci1tY3AiXSwiZW52Ijp7IkhJUkVMQVlFUl9BUElfS0VZIjoieW91ci1hcGkta2V5In19)
-[![Install in VS Code](https://img.shields.io/badge/VS_Code-Install_server-0098FF?logo=visualstudiocode&logoColor=white)](https://vscode.dev/redirect/mcp/install?name=hirelayer&inputs=%5B%7B%22type%22%3A%22promptString%22%2C%22id%22%3A%22hirelayer_api_key%22%2C%22description%22%3A%22HireLayer%20API%20key%20%28free%20at%20hirelayer.co%29%22%2C%22password%22%3Atrue%7D%5D&config=%7B%22command%22%3A%22npx%22%2C%22args%22%3A%5B%22-y%22%2C%22hirelayer-mcp%22%5D%2C%22env%22%3A%7B%22HIRELAYER_API_KEY%22%3A%22%24%7Binput%3Ahirelayer_api_key%7D%22%7D%7D)
-[![Install in VS Code Insiders](https://img.shields.io/badge/VS_Code_Insiders-Install_server-24bfa5?logo=visualstudiocode&logoColor=white)](https://insiders.vscode.dev/redirect/mcp/install?name=hirelayer&inputs=%5B%7B%22type%22%3A%22promptString%22%2C%22id%22%3A%22hirelayer_api_key%22%2C%22description%22%3A%22HireLayer%20API%20key%20%28free%20at%20hirelayer.co%29%22%2C%22password%22%3Atrue%7D%5D&config=%7B%22command%22%3A%22npx%22%2C%22args%22%3A%5B%22-y%22%2C%22hirelayer-mcp%22%5D%2C%22env%22%3A%7B%22HIRELAYER_API_KEY%22%3A%22%24%7Binput%3Ahirelayer_api_key%7D%22%7D%7D&quality=insiders)
+[![Install in Cursor](https://cursor.com/deeplink/mcp-install-dark.svg)](https://cursor.com/install-mcp?name=hirelayer&config=eyJ1cmwiOiJodHRwczovL2hpcmVsYXllci5jby9tY3AifQ%3D%3D)
+[![Install in VS Code](https://img.shields.io/badge/VS_Code-Install_server-0098FF?logo=visualstudiocode&logoColor=white)](https://vscode.dev/redirect/mcp/install?name=hirelayer&config=%7B%22type%22%3A%22http%22%2C%22url%22%3A%22https%3A%2F%2Fhirelayer.co%2Fmcp%22%7D)
+[![Install in VS Code Insiders](https://img.shields.io/badge/VS_Code_Insiders-Install_server-24bfa5?logo=visualstudiocode&logoColor=white)](https://insiders.vscode.dev/redirect/mcp/install?name=hirelayer&config=%7B%22type%22%3A%22http%22%2C%22url%22%3A%22https%3A%2F%2Fhirelayer.co%2Fmcp%22%7D&quality=insiders)
 [![Add to LM Studio](https://files.lmstudio.ai/deeplink/mcp-install-light.svg)](https://lmstudio.ai/install-mcp?name=hirelayer&config=eyJjb21tYW5kIjoibnB4IiwiYXJncyI6WyIteSIsImhpcmVsYXllci1tY3AiXSwiZW52Ijp7IkhJUkVMQVlFUl9BUElfS0VZIjoieW91ci1hcGkta2V5In19)
 
 </div>
@@ -48,17 +50,34 @@ Use it to screen applicants in a chat, build a recruiting agent, enrich an ATS, 
 
 ## Quick start
 
-1. **Get a free API key.** [Sign up at hirelayer.co](https://hirelayer.co/auth/signup), with no card required, and copy your key from **Dashboard → API keys**. The free plan includes 50 credits a month.
-2. **Add the server to your client.** Click a one-click install button above, or copy a config from [the next section](#install-in-your-mcp-client).
-3. **Ask your assistant.** For example: *"Parse ~/Downloads/resume.pdf and summarize the candidate."*
+1. **Add the server URL** `https://hirelayer.co/mcp` in your AI app, or click a one-click install button above.
+2. **Sign in to HireLayer** when your app asks, and allow access. No account yet? [Sign up for free](https://hirelayer.co/auth/signup): 50 credits a month, no card required.
+3. **Ask your assistant.** For example: attach a resume and ask *"Summarize this candidate."*
 
-To try it without your own data, use the sample job and resumes in [`examples/`](examples). The repository ships a [`.mcp.json`](.mcp.json): clone it, export `HIRELAYER_API_KEY`, open the folder in Claude Code and it offers to enable the server.
-
-Requires Node.js 20 or later, because the server runs with `npx`.
+To try it without your own data, use the sample job and resumes in [`examples/`](examples). The repository ships a [`.mcp.json`](.mcp.json): clone it, export `HIRELAYER_API_KEY`, open the folder in Claude Code and it offers to enable the local server.
 
 ## Install in your MCP client
 
-Replace `your-api-key` with your HireLayer API key in each config below.
+### Hosted server (recommended)
+
+Connect to `https://hirelayer.co/mcp` and sign in to HireLayer. Nothing to install, nothing to keep up to date.
+
+| Client | How to connect |
+|---|---|
+| **Claude** (web, desktop, mobile) | Settings → Connectors → **Add custom connector**, paste the URL, then **Connect** |
+| **ChatGPT** | Settings → Apps → turn on developer mode, create an app with the URL and OAuth authentication |
+| **Claude Code** | `claude mcp add --transport http hirelayer https://hirelayer.co/mcp`, then `/mcp` to sign in |
+| **Cursor** | Click **Install in Cursor** above, or add `{ "mcpServers": { "hirelayer": { "url": "https://hirelayer.co/mcp" } } }` to `~/.cursor/mcp.json` |
+| **VS Code** | Click **Install in VS Code** above, or add `{ "servers": { "hirelayer": { "type": "http", "url": "https://hirelayer.co/mcp" } } }` to `.vscode/mcp.json` |
+| **Codex CLI** | `codex mcp add hirelayer --url https://hirelayer.co/mcp`, then `codex mcp login hirelayer` |
+
+Clients that cannot sign in with OAuth can send a HireLayer API key instead: `Authorization: Bearer your-api-key`.
+
+The hosted `parse_resume` takes a file attached in ChatGPT, a public HTTPS URL, a small file in base64 or the resume text. To parse files from your disk, run the server locally.
+
+### Local server (npx)
+
+Runs on your machine with an API key: [sign up](https://hirelayer.co/auth/signup), then copy your key from **Dashboard → API keys** and replace `your-api-key` below.
 
 <details open>
 <summary><b>Claude Code</b></summary>
@@ -93,7 +112,7 @@ Restart Claude Desktop.
 <details>
 <summary><b>Cursor</b></summary>
 
-Click **Install in Cursor** above, or add this to `~/.cursor/mcp.json` (all projects) or `.cursor/mcp.json` (one project):
+Add this to `~/.cursor/mcp.json` (all projects) or `.cursor/mcp.json` (one project):
 
 ```json
 {
@@ -112,7 +131,7 @@ Click **Install in Cursor** above, or add this to `~/.cursor/mcp.json` (all proj
 <details>
 <summary><b>VS Code (GitHub Copilot)</b></summary>
 
-Click **Install in VS Code** above. VS Code asks for your API key and stores it securely. To configure it by hand, add this to `.vscode/mcp.json`:
+Add this to `.vscode/mcp.json`. VS Code asks for your API key and stores it securely:
 
 ```json
 {
@@ -282,7 +301,8 @@ Each successful tool call costs **1 HireLayer credit**. A `rank_candidates` call
 
 ## Data and privacy
 
-- The server runs **on your machine** and calls the HireLayer API over HTTPS with your API key. It has no telemetry.
+- The hosted server receives only what your assistant sends to HireLayer tools. Each app gets access only after you sign in and allow it, and you can disconnect it at any time.
+- The local server runs **on your machine** and calls the HireLayer API over HTTPS with your API key. It has no telemetry.
 - `parse_resume` reads only the file you name. By default HireLayer stores the original file and returns a link to it in `info_resume.url`. Set `do_not_store_data: true` in a call so the file is not stored.
 - See the [privacy policy](https://hirelayer.co/privacy-policy) and the [security policy](SECURITY.md).
 
@@ -326,8 +346,8 @@ The parser detects the main language of each resume and returns it in `info_resu
 **Can I use the REST API directly?**
 Yes. See the [API reference](https://hirelayer.co/api-docs), the [OpenAPI spec](https://hirelayer.co/openapi.json) and [`llms.txt`](https://hirelayer.co/llms.txt) for agents.
 
-**Is there a hosted remote server?**
-A hosted server with one-click sign-in (OAuth) is on the way. For now, the server runs locally with `npx`.
+**Do I need an API key?**
+Not with the hosted server: you sign in to HireLayer and allow access, and the app's calls use your plan's credits. Each connected app appears as an "(MCP)" key in **Dashboard → API keys**; revoke it to disconnect the app. The local server uses an API key.
 
 ## Development
 
