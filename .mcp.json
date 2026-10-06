@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "hirelayer": {
+      "command": "npx",
+      "args": ["-y", "hirelayer-mcp"],
+      "env": { "HIRELAYER_API_KEY": "${HIRELAYER_API_KEY}" }
+    }
+  }
+}
