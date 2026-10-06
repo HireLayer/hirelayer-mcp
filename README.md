@@ -1,5 +1,7 @@
 # HireLayer MCP server
 
+[![npm](https://img.shields.io/npm/v/hirelayer-mcp)](https://www.npmjs.com/package/hirelayer-mcp) [![License: MIT](https://img.shields.io/badge/license-MIT-blue)](LICENSE)
+
 An [MCP](https://modelcontextprotocol.io) server for the [HireLayer](https://hirelayer.co) recruiting APIs. It lets Claude, Cursor, VS Code and any other MCP client parse resumes, turn job descriptions into criteria, then match and rank candidates.
 
 | Tool | What it does | HireLayer API |
