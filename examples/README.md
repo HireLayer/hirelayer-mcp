@@ -5,7 +5,7 @@ Sample files to try the HireLayer MCP server in two minutes. Everything here is 
 | File | What it is |
 |---|---|
 | [`job-senior-react-developer.md`](job-senior-react-developer.md) | A job description |
-| [`resume-alex-morgan.txt`](resume-alex-morgan.txt) | Strong match: 8 years of React and TypeScript, team lead |
+| [`resume-alex-morgan.txt`](resume-alex-morgan.txt), [`.pdf`](resume-alex-morgan.pdf) | Strong match: 8 years of React and TypeScript, team lead (also as a PDF to test file attachments) |
 | [`resume-camille-durand.txt`](resume-camille-durand.txt) | Partial match: senior front end, but Vue.js rather than React (in French) |
 | [`resume-sam-lee.txt`](resume-sam-lee.txt) | Weak match: back-end profile with some React |
 

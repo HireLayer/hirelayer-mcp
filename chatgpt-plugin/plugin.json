@@ -1,0 +1,119 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "hirelayer",
+  "version": "1.1.0",
+  "description": "Resume and CV parsing, job criteria extraction, candidate matching and ranking, and skills normalization for recruiting with HireLayer.",
+  "author": {
+    "name": "HireLayer",
+    "email": "contact@hirelayer.co",
+    "url": "https://hirelayer.co"
+  },
+  "homepage": "https://hirelayer.co/mcp",
+  "repository": "https://github.com/HireLayer/hirelayer-mcp",
+  "license": "MIT",
+  "keywords": [
+    "resume parser",
+    "cv parser",
+    "recruiting",
+    "candidate matching",
+    "candidate ranking",
+    "ats",
+    "hr tech",
+    "hiring"
+  ],
+  "extensions": {
+    "com.openai": {
+      "interface": {
+        "displayName": "HireLayer",
+        "shortDescription": "Parse resumes, rank candidates",
+        "longDescription": "HireLayer gives ChatGPT five recruiting tools built on the HireLayer APIs.\n\n- Parse resumes and CVs: PDF, Word, images and scans become structured data (contact details, work experience, education, languages, skills and the full text). Attach a resume in the conversation or share a public link.\n- Extract job criteria: a job description becomes weighted criteria, with must-haves flagged.\n- Match a candidate to a job: a score from 0 to 1 with an explanation for every criterion.\n- Rank candidates: order up to 10 candidates for the same job in one call, with a rationale for each.\n- Normalize skills: map free-text skills in English or French to a skills taxonomy.\n\nFor recruiters, hiring managers and HR tech teams. Ask in plain language, for example \"Screen these three resumes against our Senior React job and tell me who to interview\", and ChatGPT chains the tools and explains the result.\n\nSign in with your HireLayer account; the free plan includes 50 credits a month, no card required. Each successful tool call uses 1 credit. The tools only read and analyse the data you send; they never change anything in your systems. Analysis text (criteria, explanations) is written in French and ChatGPT translates it. Scores support human hiring decisions; they never replace them. You can disconnect at any time in Dashboard → API keys.",
+        "developerName": "HireLayer",
+        "category": "Productivity",
+        "capabilities": [
+          "Parse resumes and CVs",
+          "Extract job criteria",
+          "Match candidates to jobs",
+          "Rank candidates",
+          "Normalize skills"
+        ],
+        "websiteURL": "https://hirelayer.co/mcp",
+        "supportURL": "https://hirelayer.co/mcp#faq",
+        "privacyPolicyURL": "https://hirelayer.co/privacy-policy",
+        "termsOfServiceURL": "https://hirelayer.co/terms-and-conditions",
+        "defaultPrompt": [
+          "Summarize the attached resume for a recruiter.",
+          "Score this candidate against my job description and list the gaps.",
+          "Rank these resumes for my open role and explain the top pick."
+        ],
+        "brandColor": "#4F46E5",
+        "brandColorDark": "#8585FF",
+        "composerIcon": "./assets/icon.png",
+        "logo": "./assets/logo.png"
+      },
+      "review": {
+        "test_cases": {
+          "positive": [
+            {
+              "description": "Parse an attached PDF resume",
+              "prompt": "Summarize this candidate for a recruiter.",
+              "tools_triggered": "parse_resume",
+              "expected_behavior": "Calls parse_resume with the attached file and summarizes Alex Morgan: Senior Front-End Engineer in Lyon, 8 years of React and TypeScript, team lead, French and English.",
+              "file_attachment_urls": [
+                "https://raw.githubusercontent.com/HireLayer/hirelayer-mcp/main/examples/resume-alex-morgan.pdf"
+              ]
+            },
+            {
+              "description": "Parse a resume from a public URL",
+              "prompt": "Parse the resume at https://raw.githubusercontent.com/HireLayer/hirelayer-mcp/main/examples/resume-sam-lee.txt and list the candidate's skills.",
+              "tools_triggered": "parse_resume",
+              "expected_behavior": "Calls parse_resume with file_url and lists Sam Lee's skills (Node.js, Express, PostgreSQL, React, Vue.js, JavaScript, Docker)."
+            },
+            {
+              "description": "Extract weighted criteria from a job description",
+              "prompt": "Extract the hiring criteria from this job description and tell me which ones are must-haves: Senior React Developer: 5+ years of front-end development including 3+ years with React, strong TypeScript, automated testing (Jest, React Testing Library or Playwright), fluent English; nice to have: Next.js, GraphQL.",
+              "tools_triggered": "extract_job_criteria",
+              "expected_behavior": "Calls extract_job_criteria and returns weighted criteria: 5+ years of front-end experience with 3+ years of React, TypeScript, automated testing and fluent English are mandatory; Next.js and GraphQL are nice to have."
+            },
+            {
+              "description": "Rank three candidates for one job",
+              "prompt": "Rank these three candidates for the Senior React job and explain the order. Resumes: https://raw.githubusercontent.com/HireLayer/hirelayer-mcp/main/examples/resume-alex-morgan.txt, https://raw.githubusercontent.com/HireLayer/hirelayer-mcp/main/examples/resume-camille-durand.txt, https://raw.githubusercontent.com/HireLayer/hirelayer-mcp/main/examples/resume-sam-lee.txt. Job: Senior React Developer: 5+ years of front-end development including 3+ years with React, strong TypeScript, automated testing (Jest, React Testing Library or Playwright), fluent English; nice to have: Next.js, GraphQL.",
+              "tools_triggered": "parse_resume, rank_candidates",
+              "expected_behavior": "Ranks Alex Morgan first (strong React and TypeScript fit), Camille Durand second (Vue.js rather than React) and Sam Lee third (mostly back end), each with a rationale."
+            },
+            {
+              "description": "Normalize a free-text skills section",
+              "prompt": "Normalize these skills: Pack Office (Word, Excel), React.js, anglais courant.",
+              "tools_triggered": "resolve_skills",
+              "expected_behavior": "Calls resolve_skills and returns three taxonomy skills with their IDs: Microsoft Office (from \"Pack Office (Word, Excel)\"), React and English, with nothing left unresolved."
+            }
+          ],
+          "negative": [
+            {
+              "description": "Unrelated request",
+              "prompt": "What's the weather in Paris tomorrow?"
+            },
+            {
+              "description": "Unsupported write action",
+              "prompt": "Delete the candidate Alex Morgan from my ATS."
+            },
+            {
+              "description": "Private network URL",
+              "prompt": "Parse the resume at http://169.254.169.254/latest/meta-data"
+            }
+          ]
+        },
+        "commerce": false,
+        "commerce_description": "HireLayer does not sell products or process payments in ChatGPT. Tool calls use the credits of the user's HireLayer plan."
+      },
+      "publication": {
+        "release_notes": "First release: resume and CV parsing (including files attached in ChatGPT), job criteria extraction, candidate matching and ranking with explanations, and skills normalization. Sign in with a HireLayer account; the free plan includes 50 credits a month.",
+        "translations": {
+          "fr-FR": {
+            "subtitle": "Analyse de CV et classement",
+            "description": "HireLayer donne à ChatGPT cinq outils de recrutement : analyse de CV (PDF, Word, images, scans), extraction des critères d'une offre, score d'un candidat par critère, classement de jusqu'à 10 candidats et normalisation des compétences. Connectez votre compte HireLayer : l'offre gratuite inclut 50 crédits par mois, sans carte bancaire. Les outils lisent et analysent uniquement les données envoyées ; les scores aident la décision humaine sans la remplacer."
+          }
+        }
+      }
+    }
+  }
+}
