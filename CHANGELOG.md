@@ -2,6 +2,11 @@
 
 All notable changes to this project are documented here. The project follows [Semantic Versioning](https://semver.org).
 
+## 1.1.1 - 2026-10-06
+
+- Tool annotations carry a human-readable `title`, as the Claude and ChatGPT directories expect.
+- ChatGPT plugin package in `chatgpt-plugin/` and a sample PDF resume in `examples/`.
+
 ## 1.1.0 - 2026-10-06
 
 - Hosted server at `https://hirelayer.co/mcp`: connect Claude, ChatGPT, Cursor, VS Code or Codex with the URL and a HireLayer sign-in (OAuth), no API key needed. Listed as a remote in the MCP Registry.

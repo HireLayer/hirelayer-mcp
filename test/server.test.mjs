@@ -25,6 +25,7 @@ test('lists the five tools as read-only, non-destructive tools', async () => {
   ])
   for (const tool of tools) {
     assert.ok(tool.title, `${tool.name} has a title`)
+    assert.equal(tool.annotations.title, tool.title)
     assert.equal(tool.annotations.readOnlyHint, true)
     assert.equal(tool.annotations.destructiveHint, false)
   }

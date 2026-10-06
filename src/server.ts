@@ -32,7 +32,12 @@ const criterion = z.object({
 })
 
 // The tools only read and analyse data; they never change anything in the user's systems.
-const annotations = { readOnlyHint: true, destructiveHint: false, openWorldHint: true } as const
+const readOnly = { readOnlyHint: true, destructiveHint: false, openWorldHint: true } as const
+
+// Directories (Claude, ChatGPT) read the human-readable name from annotations.title.
+function annotations(title: string) {
+  return { title, ...readOnly }
+}
 
 export function createServer(client: HireLayerClient): McpServer {
   const server = new McpServer(
@@ -74,7 +79,7 @@ export function createServer(client: HireLayerClient): McpServer {
           .optional()
           .describe('true: HireLayer does not keep the file after parsing.'),
       },
-      annotations,
+      annotations: annotations('Parse a resume'),
     },
     ({ file_path, file_url, application_id, do_not_store_data }, extra) =>
       run(extra, (signal) =>
@@ -94,7 +99,7 @@ export function createServer(client: HireLayerClient): McpServer {
       inputSchema: {
         job_text: z.string().min(1).max(50000).describe('Full job description.'),
       },
-      annotations,
+      annotations: annotations('Extract job criteria'),
     },
     ({ job_text }, extra) => run(extra, (signal) => client.extractJobCriteria(job_text, { signal }))
   )
@@ -113,7 +118,7 @@ export function createServer(client: HireLayerClient): McpServer {
           .default([])
           .describe('Criteria to evaluate, usually from extract_job_criteria.'),
       },
-      annotations,
+      annotations: annotations('Match a candidate to a job'),
     },
     (args, extra) => run(extra, (signal) => client.matchCandidate(args, { signal }))
   )
@@ -136,7 +141,7 @@ export function createServer(client: HireLayerClient): McpServer {
           .min(1)
           .max(10),
       },
-      annotations,
+      annotations: annotations('Rank candidates for a job'),
     },
     (args, extra) => run(extra, (signal) => client.rankCandidates(args, { signal }))
   )
@@ -151,7 +156,7 @@ export function createServer(client: HireLayerClient): McpServer {
         text: z.string().min(1).max(5000).describe('Free text containing one or more skills.'),
         language: z.enum(['fr', 'en']).optional().describe('Language of the labels returned: fr (default) or en.'),
       },
-      annotations,
+      annotations: annotations('Resolve skills'),
     },
     ({ text, language }, extra) => run(extra, (signal) => client.resolveSkills(text, language, { signal }))
   )

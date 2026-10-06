@@ -38,3 +38,11 @@ HIRELAYER_API_KEY=your-api-key npx @modelcontextprotocol/inspector node dist/ind
 ## Releases
 
 Maintainers bump `version` in `package.json` and in both places in `server.json`, update `CHANGELOG.md`, then push a `vX.Y.Z` tag. The release workflow publishes to npm and the MCP Registry.
+
+## ChatGPT plugin package
+
+`chatgpt-plugin/` holds the package uploaded to the ChatGPT plugin directory (`plugin.json` with the listing, review test cases and release notes, `mcp.json` with the hosted server URL, and icons). Keep its `version` in line with `package.json`, then build the ZIP from inside the folder:
+
+```bash
+cd chatgpt-plugin && zip -r ../hirelayer-chatgpt-plugin.zip . -x '.*'
+```
