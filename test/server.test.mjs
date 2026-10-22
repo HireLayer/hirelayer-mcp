@@ -45,16 +45,16 @@ test('exposes server instructions and workflow prompts', async () => {
 
 test('tool calls return the API JSON, and API errors as tool errors', async () => {
   const responses = [
-    new Response('{"rankings":[{"rank":1,"candidate_id":"c1","score":0.9}]}'),
+    new Response('{"rankings":[{"rank":1,"application_id":"c1","score":0.9}]}'),
     new Response('{"error":"Insufficient credits"}', { status: 403 }),
   ]
   const client = await connect(async () => responses.shift())
   const ok = await client.callTool({
     name: 'rank_candidates',
-    arguments: { job_text: 'React', candidates: [{ id: 'c1', candidate_text: 'React dev' }] },
+    arguments: { job_text: 'React', candidates: [{ application_id: 'c1', candidate_text: 'React dev' }] },
   })
   assert.equal(ok.isError, undefined)
-  assert.equal(JSON.parse(ok.content[0].text).rankings[0].candidate_id, 'c1')
+  assert.equal(JSON.parse(ok.content[0].text).rankings[0].application_id, 'c1')
   const failed = await client.callTool({ name: 'resolve_skills', arguments: { text: 'Excel' } })
   assert.equal(failed.isError, true)
   assert.match(failed.content[0].text, /403.*Insufficient credits/)

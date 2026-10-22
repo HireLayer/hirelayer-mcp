@@ -82,7 +82,7 @@ export class HireLayerClient {
   rankCandidates(
     body: {
       job_text: string
-      candidates: { id: string; candidate_text: string }[]
+      candidates: { application_id: string; candidate_text: string }[]
     },
     options: CallOptions = {}
   ): Promise<unknown> {

@@ -2,6 +2,10 @@
 
 All notable changes to this project are documented here. The project follows [Semantic Versioning](https://semver.org).
 
+## 1.1.2 - 2026-10-22
+
+- `rank_candidates` takes `candidates[].application_id` and returns `rankings[].application_id`, as the Rank API now expects: calls with `id` were rejected.
+
 ## 1.1.1 - 2026-10-06
 
 - Tool annotations carry a human-readable `title`, as the Claude and ChatGPT directories expect.
