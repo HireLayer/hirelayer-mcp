@@ -128,13 +128,13 @@ export function createServer(client: HireLayerClient): McpServer {
     {
       title: 'Rank candidates for a job',
       description:
-        'Rank up to 10 candidates against the same job description, from their resume texts: returns each candidate with a rank, a score between 0 and 1 and a rationale (written in French). Costs 1 HireLayer credit per call, whatever the number of candidates.',
+        'Rank up to 10 candidates against the same job description, from their resume texts: returns each candidate with its application_id, a rank, a score between 0 and 1 and a rationale (written in French). Costs 1 HireLayer credit per call, whatever the number of candidates.',
       inputSchema: {
         job_text: z.string().min(1).max(50000).describe('Job description.'),
         candidates: z
           .array(
             z.object({
-              id: z.string().min(1).describe('Your candidate ID, unique in the request.'),
+              application_id: z.string().min(1).describe('Your application ID, unique in the request, returned with its ranking.'),
               candidate_text: z.string().min(1).max(50000).describe('Resume as plain text.'),
             })
           )
