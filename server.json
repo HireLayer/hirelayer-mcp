@@ -33,6 +33,13 @@
           "isRequired": true,
           "isSecret": true,
           "format": "string"
+        },
+        {
+          "name": "HIRELAYER_WORKSPACE",
+          "description": "Client workspace that parse_resume keeps resumes in when a call names none (letters, digits and . _ : ~ -, up to 200 characters). Omit for the default workspace.",
+          "isRequired": false,
+          "isSecret": false,
+          "format": "string"
         }
       ]
     }

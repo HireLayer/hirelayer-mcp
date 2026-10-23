@@ -216,7 +216,7 @@ In Docker, `parse_resume` only reads files that you mount into the container. Ot
 
 | Tool | What it does | Typical input |
 |---|---|---|
-| `parse_resume` | Parses a resume or CV file into structured JSON: contact details, experience, education, languages, skills and the full text | A local `file_path` or a public `file_url`. Accepts PDF, DOC, DOCX, ODT, RTF, TXT, PPT, PPTX, ODP, XLS, JPG, PNG or BMP files under 4.5 MB. |
+| `parse_resume` | Parses a resume or CV file into structured JSON: contact details, experience, education, languages, skills and the full text | A local `file_path` or a public `file_url`. Accepts PDF, DOC, DOCX, ODT, RTF, TXT, PPT, PPTX, ODP, XLS, JPG, PNG or BMP files under 4.5 MB. Optional `workspace`: the client workspace to keep the resume in. |
 | `extract_job_criteria` | Turns a job description into weighted criteria: a weight from 1 to 3, a mandatory flag and a rationale for each | Job description text |
 | `match_candidate` | Scores one candidate against a job from 0 to 1, with a summary and a status and explanation for each criterion | Job text, resume text and criteria |
 | `rank_candidates` | Ranks up to 10 candidates for one job, with a score and a rationale for each | Job text and up to 10 resume texts |
@@ -304,6 +304,7 @@ Each successful tool call costs **1 HireLayer credit**. A `rank_candidates` call
 - The hosted server receives only what your assistant sends to HireLayer tools. Each app gets access only after you sign in and allow it, and you can disconnect it at any time.
 - The local server runs **on your machine** and calls the HireLayer API over HTTPS with your API key. It has no telemetry.
 - `parse_resume` reads only the file you name. By default HireLayer stores the original file and returns a link to it in `info_resume.url`. Set `do_not_store_data: true` in a call so the file is not stored.
+- Stored resumes go to your `default` workspace. If you recruit for several client companies, keep each client's resumes apart: pass `workspace` to `parse_resume` (for example `acme-corp`), or set `HIRELAYER_WORKSPACE` to choose the workspace of calls that name none. Workspace ids use letters, digits and `. _ : ~ -`, up to 200 characters, and are not case-sensitive. The other tools keep no data, so they take no workspace.
 - See the [privacy policy](https://hirelayer.co/privacy-policy) and the [security policy](SECURITY.md).
 
 Resumes contain personal data. Use the tools in line with your hiring process and the rules that apply to you, such as GDPR. Scores support human decisions; they don't replace them.
@@ -313,6 +314,7 @@ Resumes contain personal data. Use the tools in line with your hiring process an
 | Variable | Required | Default | Description |
 |---|---|---|---|
 | `HIRELAYER_API_KEY` | Yes | | Your HireLayer API key |
+| `HIRELAYER_WORKSPACE` | No | `default` | The client workspace `parse_resume` keeps resumes in when a call passes no `workspace` |
 | `HIRELAYER_BASE_URL` | No | `https://hirelayer.co` | API base URL, for testing |
 
 ## Troubleshooting
@@ -322,6 +324,7 @@ Resumes contain personal data. Use the tools in line with your hiring process an
 | `HIRELAYER_API_KEY is not set` | Add the `env` block with your key to the client config, then restart the client. |
 | `HireLayer API returned 401` | The key is wrong or revoked. Copy it again from **Dashboard → API keys**. |
 | `HireLayer API returned 403` | You have used your monthly credits. Wait for the reset or upgrade your plan. |
+| `HIRELAYER_WORKSPACE must contain letters, digits…` | Use only letters, digits and `. _ : ~ -` (no spaces), up to 200 characters, or remove the variable to use the default workspace. |
 | Parsing seems slow | Parsing usually takes about 35 seconds, and longer for scans that need OCR. The server sends progress updates so clients don't time out. |
 | `npx` not found or an old Node.js | Install Node.js 20 or later from [nodejs.org](https://nodejs.org). |
 | The file is not found | Use an absolute path, for example `/Users/me/Downloads/cv.pdf` rather than `~/Downloads/cv.pdf`. |

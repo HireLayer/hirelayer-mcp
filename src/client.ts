@@ -9,6 +9,12 @@ export const MAX_RESUME_BYTES = 4.5 * 1024 * 1024
 // 502 and 503 are transient and never charged, so one retry is safe.
 const RETRYABLE_STATUSES = new Set([502, 503])
 const MAX_RETRY_DELAY_MS = 10_000
+// Agencies keep each end client's data apart in workspaces; without this
+// header the API uses the `default` workspace.
+const WORKSPACE_HEADER = 'HireLayer-Workspace'
+// The API's rule for workspace ids, checked after trimming.
+export const WORKSPACE_PATTERN = /^[A-Za-z0-9._:~-]{1,200}$/
+export const WORKSPACE_RULE = 'letters, digits and . _ : ~ -, up to 200 characters'
 
 export class HireLayerError extends Error {
   constructor(
@@ -20,12 +26,28 @@ export class HireLayerError extends Error {
   }
 }
 
+/**
+ * Trims a workspace id and checks it as the API does. Ids are case-insensitive
+ * and the API stores them in lowercase, so the id comes back lowercased.
+ * An empty value gives undefined: the default workspace.
+ */
+export function normalizeWorkspace(value: string | undefined): string | undefined {
+  const id = value?.trim()
+  if (!id) return undefined
+  if (!WORKSPACE_PATTERN.test(id)) {
+    throw new HireLayerError(`workspace must contain ${WORKSPACE_RULE}.`)
+  }
+  return id.toLowerCase()
+}
+
 export interface ClientOptions {
   apiKey: string
   baseUrl?: string
   fetch?: typeof fetch
   /** Delay before retrying a 502 or 503 when the API sends no Retry-After. */
   retryDelayMs?: number
+  /** Workspace of the calls that name none; the API's `default` when omitted. */
+  workspace?: string
 }
 
 export interface ResumeSource {
@@ -42,18 +64,22 @@ export class HireLayerClient {
   private readonly baseUrl: string
   private readonly fetch: typeof fetch
   private readonly retryDelayMs: number
+  private readonly workspace: string | undefined
 
-  constructor({ apiKey, baseUrl, fetch: fetchImpl, retryDelayMs }: ClientOptions) {
+  constructor({ apiKey, baseUrl, fetch: fetchImpl, retryDelayMs, workspace }: ClientOptions) {
     this.apiKey = apiKey
     this.baseUrl = (baseUrl || DEFAULT_BASE_URL).replace(/\/+$/, '')
     this.fetch = fetchImpl ?? globalThis.fetch
     this.retryDelayMs = retryDelayMs ?? 2_000
+    this.workspace = normalizeWorkspace(workspace)
   }
 
+  // The only call that keeps data: the API stores the parse in the workspace.
   async parseResume(
     source: ResumeSource,
-    options: { applicationId?: string; doNotStoreData?: boolean } & CallOptions = {}
+    options: { applicationId?: string; doNotStoreData?: boolean; workspace?: string } & CallOptions = {}
   ): Promise<unknown> {
+    const workspace = normalizeWorkspace(options.workspace) ?? this.workspace
     const { bytes, filename } = await this.loadResume(source, options.signal)
     const form = new FormData()
     form.append('file', new Blob([bytes]), filename)
@@ -61,7 +87,12 @@ export class HireLayerClient {
     if (options.doNotStoreData !== undefined) {
       form.append('do_not_store_data', String(options.doNotStoreData))
     }
-    return this.request('/api/v3/parser', { method: 'POST', body: form, signal: options.signal })
+    return this.request('/api/v3/parser', {
+      method: 'POST',
+      headers: workspace ? { [WORKSPACE_HEADER]: workspace } : undefined,
+      body: form,
+      signal: options.signal,
+    })
   }
 
   extractJobCriteria(jobText: string, options: CallOptions = {}): Promise<unknown> {

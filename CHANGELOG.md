@@ -2,6 +2,10 @@
 
 All notable changes to this project are documented here. The project follows [Semantic Versioning](https://semver.org).
 
+## Unreleased
+
+- `parse_resume` takes an optional `workspace`, sent as the `HireLayer-Workspace` header, so agencies keep each client's resumes apart. `HIRELAYER_WORKSPACE` sets the workspace of calls that name none; without either, resumes go to the `default` workspace. Ids are checked as the API checks them and sent in lowercase.
+
 ## 1.1.2 - 2026-10-22
 
 - `rank_candidates` takes `candidates[].application_id` and returns `rankings[].application_id`, as the Rank API now expects: calls with `id` were rejected.

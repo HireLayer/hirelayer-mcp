@@ -3,7 +3,7 @@ import { test } from 'node:test'
 import { mkdtemp, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { HireLayerClient, HireLayerError } from '../dist/client.js'
+import { HireLayerClient, HireLayerError, normalizeWorkspace } from '../dist/client.js'
 
 function recorder(responses) {
   const calls = []
@@ -57,6 +57,55 @@ test('parseResume uploads a local file as multipart', async () => {
   assert.equal(form.get('file').name, 'cv.txt')
   assert.equal(form.get('do_not_store_data'), 'true')
   assert.equal(calls[0].url, 'https://hirelayer.co/api/v3/parser')
+})
+
+test('parseResume sends the workspace header, trimmed and lowercased', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'hl-'))
+  const path = join(dir, 'cv.txt')
+  await writeFile(path, 'Jane Doe')
+  const { calls, fetch } = recorder([{ body: '{}' }, { body: '{}' }])
+  const client = new HireLayerClient({ apiKey: 'k', fetch })
+  await client.parseResume({ filePath: path }, { workspace: '  Acme-Corp ' })
+  await client.parseResume({ filePath: path })
+  assert.equal(calls[0].init.headers['HireLayer-Workspace'], 'acme-corp')
+  assert.equal(calls[0].init.headers['X-API-Key'], 'k')
+  assert.equal('HireLayer-Workspace' in calls[1].init.headers, false)
+})
+
+test('the client workspace applies when a call names none, and the call wins', async () => {
+  const dir = await mkdtemp(join(tmpdir(), 'hl-'))
+  const path = join(dir, 'cv.txt')
+  await writeFile(path, 'Jane Doe')
+  const { calls, fetch } = recorder([{ body: '{}' }, { body: '{}' }, { body: '{}' }])
+  const client = new HireLayerClient({ apiKey: 'k', fetch, workspace: 'Client-A' })
+  await client.parseResume({ filePath: path })
+  await client.parseResume({ filePath: path }, { workspace: 'client-b' })
+  assert.equal(calls[0].init.headers['HireLayer-Workspace'], 'client-a')
+  assert.equal(calls[1].init.headers['HireLayer-Workspace'], 'client-b')
+  // The other endpoints keep no data, so they get no workspace.
+  await client.extractJobCriteria('React developer')
+  assert.equal('HireLayer-Workspace' in calls[2].init.headers, false)
+})
+
+test('an invalid workspace is rejected before any request', async () => {
+  const { calls, fetch } = recorder([])
+  const client = new HireLayerClient({ apiKey: 'k', fetch })
+  await assert.rejects(
+    client.parseResume({ fileUrl: 'https://x.test/cv.pdf' }, { workspace: 'acme corp' }),
+    (error) => error instanceof HireLayerError && /workspace must contain letters, digits/.test(error.message)
+  )
+  assert.equal(calls.length, 0)
+  assert.throws(() => new HireLayerClient({ apiKey: 'k', workspace: 'a/b' }), HireLayerError)
+})
+
+test('normalizeWorkspace follows the API rule for workspace ids', () => {
+  assert.equal(normalizeWorkspace(undefined), undefined)
+  assert.equal(normalizeWorkspace('   '), undefined)
+  assert.equal(normalizeWorkspace('Agency.Client_1:EU~prod-2'), 'agency.client_1:eu~prod-2')
+  assert.equal(normalizeWorkspace('a'.repeat(200)), 'a'.repeat(200))
+  for (const bad of ['a'.repeat(201), 'acme corp', 'a/b', 'café', 'a@b']) {
+    assert.throws(() => normalizeWorkspace(bad), /workspace must contain/, bad)
+  }
 })
 
 test('parseResume requires exactly one source', async () => {

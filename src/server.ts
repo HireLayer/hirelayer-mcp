@@ -2,7 +2,7 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
 import type { ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
 import { z } from 'zod'
-import { HireLayerClient, VERSION } from './client.js'
+import { HireLayerClient, VERSION, WORKSPACE_PATTERN, WORKSPACE_RULE } from './client.js'
 
 type Extra = RequestHandlerExtra<ServerRequest, ServerNotification>
 
@@ -21,6 +21,7 @@ Notes:
 - The text HireLayer writes (criteria labels and rationales, match summaries and explanations, ranking rationales) is in French: translate it when you answer the user in another language.
 - info_resume.text can reach 100,000 characters; match_candidate and rank_candidates accept 50,000 characters per resume, so truncate longer texts.
 - Pass do_not_store_data: true to parse_resume when the user does not want HireLayer to keep the file.
+- When the user recruits for several client companies, pass the client's workspace id to parse_resume so each client's resumes stay apart. A new id creates a new workspace, so reuse the same id for the same client.
 - Every successful tool call costs 1 HireLayer credit. Resume parsing usually takes about 35 seconds.`
 
 const criterion = z.object({
@@ -78,14 +79,22 @@ export function createServer(client: HireLayerClient): McpServer {
           .boolean()
           .optional()
           .describe('true: HireLayer does not keep the file after parsing.'),
+        workspace: z
+          .string()
+          .trim()
+          .regex(WORKSPACE_PATTERN, `workspace must contain ${WORKSPACE_RULE}`)
+          .optional()
+          .describe(
+            `The client workspace to keep this resume in, e.g. acme-corp (${WORKSPACE_RULE}, not case-sensitive); omit for the default workspace.`
+          ),
       },
       annotations: annotations('Parse a resume'),
     },
-    ({ file_path, file_url, application_id, do_not_store_data }, extra) =>
+    ({ file_path, file_url, application_id, do_not_store_data, workspace }, extra) =>
       run(extra, (signal) =>
         client.parseResume(
           { filePath: file_path, fileUrl: file_url },
-          { applicationId: application_id, doNotStoreData: do_not_store_data, signal }
+          { applicationId: application_id, doNotStoreData: do_not_store_data, workspace, signal }
         )
       )
   )
