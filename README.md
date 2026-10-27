@@ -4,9 +4,9 @@
 
 # HireLayer MCP Server
 
-**Resume parsing, candidate matching and candidate ranking for AI agents.**
+**Resume parsing, resume scoring and talent pool search for AI agents.**
 
-The official [Model Context Protocol](https://modelcontextprotocol.io) server for [HireLayer](https://hirelayer.co). Parse resumes and CVs, turn job descriptions into criteria, then score and rank candidates from Claude, ChatGPT, Cursor, VS Code, Codex or any MCP client.
+The official [Model Context Protocol](https://modelcontextprotocol.io) server for [HireLayer](https://hirelayer.co). Parse resumes and CVs, turn job descriptions into criteria, score and rank resumes against a job, and search the candidates and jobs you already have, from Claude, ChatGPT, Cursor, VS Code, Codex or any MCP client.
 
 **Server URL: `https://hirelayer.co/mcp`** · sign in with your HireLayer account, no API key to copy.
 
@@ -24,7 +24,7 @@ The official [Model Context Protocol](https://modelcontextprotocol.io) server fo
 
 > "Screen these 3 resumes against the Senior React job and tell me who to interview."
 >
-> Your assistant parses each CV, extracts the job criteria, scores every candidate criterion by criterion and explains the shortlist.
+> Your assistant parses each CV, scores every candidate against the job criterion by criterion and explains the shortlist.
 
 ## Contents
 
@@ -40,11 +40,12 @@ The official [Model Context Protocol](https://modelcontextprotocol.io) server fo
 
 ## What you can do
 
-- **Parse resumes and CVs.** Turn PDF, Word, image and other files into structured JSON: contact details, work experience, education, languages, skills and the full text. Scanned resumes go through OCR, and the resume language is detected.
-- **Turn a job description into criteria.** Get weighted, explained matching criteria, with mandatory requirements flagged.
-- **Match candidates to jobs.** Score a resume against a job from 0 to 1, with an explanation for each criterion.
-- **Rank candidates.** Order up to 10 candidates for the same job in one call, with a score and a rationale for each.
-- **Normalize skills.** Map free-text skills in French or English to a skills taxonomy with stable IDs.
+- **Parse resumes and CVs** (Resume Parser). Turn PDF, Word, image and other files into structured JSON: contact details, work experience, education, languages, skills and the full text. Scanned resumes go through OCR, and the resume language is detected.
+- **Turn a job description into criteria** (Job Criteria Extractor). Get typed, weighted criteria, each marked required, preferred or bonus. Free.
+- **Score and rank resumes** (Resume Scorer). Score up to 50 resumes against a job in one call, from 0 to 1, with a verdict, a summary and the evidence for each criterion, best first. Ask for a precise ranking to re-rank the 10 best with a reason each.
+- **Search your talent pool** (Talent Pool Search). Find the resumes already in your HireLayer database closest to a job, around a city if you like.
+- **Recommend jobs** (Job Recommendations). Find your open jobs closest to a candidate.
+- **Normalize skills** (Skills Normalizer). Map free-text skills in French or English to a skills taxonomy with stable IDs.
 
 Use it to screen applicants in a chat, build a recruiting agent, enrich an ATS, or prototype HR tech features without writing integration code.
 
@@ -208,27 +209,32 @@ docker build -t hirelayer-mcp .
 docker run -i --rm -e HIRELAYER_API_KEY=your-api-key hirelayer-mcp
 ```
 
-In Docker, `parse_resume` only reads files that you mount into the container. Otherwise, pass `file_url`.
+In Docker, `parse_resume` only reads files that you mount into the container. Otherwise, pass `file_url` or `resume_text`.
 
 </details>
 
 ## Tools
 
-| Tool | What it does | Typical input |
-|---|---|---|
-| `parse_resume` | Parses a resume or CV file into structured JSON: contact details, experience, education, languages, skills and the full text | A local `file_path` or a public `file_url`. Accepts PDF, DOC, DOCX, ODT, RTF, TXT, PPT, PPTX, ODP, XLS, JPG, PNG or BMP files under 4.5 MB. |
-| `extract_job_criteria` | Turns a job description into weighted criteria: a weight from 1 to 3, a mandatory flag and a rationale for each | Job description text |
-| `match_candidate` | Scores one candidate against a job from 0 to 1, with a summary and a status and explanation for each criterion | Job text, resume text and criteria |
-| `rank_candidates` | Ranks up to 10 candidates for one job, with a score and a rationale for each | Job text and up to 10 resume texts |
-| `resolve_skills` | Maps free-text skills in French or English to taxonomy skills, with their families and domains | Free text, from one skill to a whole skills section |
+| Tool | Product | What it does | Typical input |
+|---|---|---|---|
+| `parse_resume` | Resume Parser | Parses a resume or CV into structured JSON: contact details, experience, education, languages, skills and the full text, stored under an `application_id` | A local `file_path`, a public `file_url` or the `resume_text`. Accepts PDF, DOC, DOCX, ODT, RTF, TXT, HTML, Markdown, PPT, PPTX, ODP, XLS, JPG, PNG or BMP files under 4.5 MB. |
+| `extract_job_criteria` | Job Criteria Extractor | Turns a job description into typed criteria, each with a requirement (required, preferred or bonus) and a weight from 0 to 3, and stores the job under a `job_id` | Job description text |
+| `score_resumes` | Resume Scorer | Scores 1 to 50 resumes against one job, best first: a score from 0 to 1, a verdict, a summary, the required criteria missing and the evidence for each criterion. `precise_ranking` re-ranks the 10 best with a reason each | The job as `job_text` (optionally with your own `criteria`) or a `job_id`, and each resume as `text` or an `application_id` |
+| `search_resumes` | Talent Pool Search | Finds the stored resumes closest to a job, with optional city, radius and date filters. Proximity only: score the ones worth it with `score_resumes` | A `job_id` or `job_text` |
+| `search_jobs` | Job Recommendations | Finds the stored open jobs closest to a resume. Proximity only | An `application_id` or `resume_text` |
+| `normalize_skills` | Skills Normalizer | Maps free-text skills in French or English to taxonomy skills, with their families and domains | Free text, from one skill to a whole skills section |
 
-All tools only read and analyse data. They never change anything in your systems.
+HireLayer keeps the resumes, jobs and scores in your HireLayer account, as the REST API does, so a resume or a job-resume pair already processed costs nothing the second time and the two searches have something to search. `normalize_skills` stores nothing. No tool deletes anything or changes your other systems.
+
+**Several client companies?** Every tool except `normalize_skills` takes an optional `workspace` (for example `acme-corp`), sent as the `HireLayer-Workspace` header: each client's jobs, resumes and scores stay apart. A new id creates a new workspace; without one, calls use your default workspace.
+
+Upgrading from 1.x: `match_candidate` and `rank_candidates` became `score_resumes`, and `resolve_skills` became `normalize_skills`. See the [changelog](CHANGELOG.md).
 
 The server also ships **prompts** that clients show as ready-made commands:
 
 | Prompt | What it does |
 |---|---|
-| `screen_candidates` | Runs the full screening workflow (criteria, parsing, matching) and writes a shortlist |
+| `screen_candidates` | Parses the resume files, scores every resume against the job in one call with a precise ranking, and writes a shortlist |
 | `summarize_resume` | Parses one resume and writes a recruiter summary |
 | `normalize_skills` | Normalizes a skills section and groups it by domain |
 
@@ -236,37 +242,61 @@ The server also ships **prompts** that clients show as ready-made commands:
 
 ```mermaid
 flowchart LR
-    J[Job description] --> C[extract_job_criteria]
+    J[Job description] --> S[score_resumes]
     R[Resume files] --> P[parse_resume]
-    C --> M[match_candidate]
-    P --> M
-    P --> K[rank_candidates]
-    J --> K
-    M --> S[Shortlist with explanations]
-    K --> S
+    P -- application_id --> S
+    T[Resume texts] --> S
+    J -. review criteria first .-> C[extract_job_criteria]
+    C -. job_id .-> S
+    D[(Your talent pool)] --> Q[search_resumes]
+    Q -- application_ids --> S
+    S --> L[Shortlist with evidence]
 ```
 
 <details>
-<summary><b>Example output from <code>match_candidate</code></b></summary>
+<summary><b>Example output from <code>score_resumes</code></b></summary>
+
+Trimmed to one resume and one criterion:
 
 ```json
 {
-  "score": 0.89,
-  "summary": "Profil très aligné : React, TypeScript et l’expérience demandée sont démontrés. Le niveau d’anglais reste à confirmer.",
-  "evaluated_criteria": [
+  "job": {
+    "job_id": "job_8f14e45fceea167a5a36dedd4bea2543",
+    "title": "Senior React Developer",
+    "language": "en"
+  },
+  "precise_ranking": true,
+  "scores": [
     {
-      "id": "crit_1",
-      "label": "Maîtrise de React",
-      "weight": 3,
-      "is_mandatory": true,
-      "match_status": "ideal",
-      "match_explanation": "Le CV décrit une équipe React dirigée depuis 2022 sur une plateforme en production."
+      "rank": 1,
+      "application_id": "text_c4ca4238a0b923820dcc509a6f75849b",
+      "reference": "alex-morgan",
+      "evaluation_status": "completed",
+      "score": 0.91,
+      "verdict": "highly_relevant",
+      "summary": "Strong fit: 8 years of React and TypeScript, team lead, automated testing with Jest and Playwright. Health tech experience to confirm.",
+      "ranking_reason": "The only candidate who has led a React and TypeScript team in production.",
+      "required_missing": [],
+      "to_verify": [],
+      "criteria": [
+        {
+          "criterion_id": "crit_2",
+          "label": "React experience",
+          "requirement": "required",
+          "weight": 3,
+          "status": "met",
+          "score": 1,
+          "evidence": "Lead Front-End Engineer, Medisoft: 'Lead a team of 4 developers on a React 18 + TypeScript appointment platform'",
+          "explanation": "Over 3 years of React, the last ones leading a team on a production platform."
+        }
+      ]
     }
-  ]
+  ],
+  "credits_used": 3
 }
 ```
 
-Criteria labels, rationales, summaries and explanations are written in French. Your assistant translates them when it answers you in another language.
+Criteria, summaries and explanations are written in the job's language (French or English) unless you pass `language`; evidence quotes the resume in its own language.
 
 </details>
 
@@ -275,10 +305,13 @@ Criteria labels, rationales, summaries and explanations are written in French. Y
 **Recruiters and hiring managers**
 
 - "Parse `~/Downloads/jane-doe.pdf` and summarize her experience in five bullet points."
-- "Here is our job description for a Senior Data Engineer. Extract the criteria, then tell me which ones are must-haves."
+- "Here is our job description for a Senior Data Engineer. Extract the criteria, then tell me which ones are required."
 - "Score the resumes in `~/candidates/` against this job and give me a shortlist table with scores and main gaps."
-- "Rank these 8 candidates for the Account Executive role and explain why the top 3 stand out."
-- "Does this candidate meet every mandatory criterion? If not, which ones are missing?"
+- "Rank these 8 candidates for the Account Executive role with a precise ranking and explain why the top 3 stand out."
+- "Does this candidate meet every required criterion? If not, which ones are missing?"
+- "Which candidates already in my HireLayer database fit this job? Keep those within 50 km of Lyon."
+- "Which of our open jobs suit this candidate?"
+- "For our client Acme Corp (workspace `acme-corp`), score these resumes against their Product Manager job."
 
 **Developers and HR tech teams**
 
@@ -292,18 +325,27 @@ Criteria labels, rationales, summaries and explanations are written in French. Y
 
 ## Pricing and credits
 
-Each successful tool call costs **1 HireLayer credit**. A `rank_candidates` call costs 1 credit whatever the number of candidates. Failed calls are not charged.
+| Tool | Credits |
+|---|---|
+| `parse_resume` | 1 per resume, 0 for a file already stored |
+| `extract_job_criteria` | Free |
+| `score_resumes` | 1 per resume evaluated, 0 for a job-resume pair already scored; the precise ranking is included |
+| `search_resumes`, `search_jobs` | 1 per search |
+| `normalize_skills` | 1 |
+
+Failed calls and resumes that fail are not charged, and a call refused for lack of credits processes nothing.
 
 | Plan | Credits | Price |
 |---|---|---|
 | Free | 50 a month | Free, no card required |
-| Paid plans | More credits and higher limits | See [hirelayer.co/#pricing](https://hirelayer.co/#pricing) |
+| Paid plans | More credits and higher limits | See [hirelayer.co/pricing](https://hirelayer.co/pricing) |
 
 ## Data and privacy
 
 - The hosted server receives only what your assistant sends to HireLayer tools. Each app gets access only after you sign in and allow it, and you can disconnect it at any time.
 - The local server runs **on your machine** and calls the HireLayer API over HTTPS with your API key. It has no telemetry.
-- `parse_resume` reads only the file you name. By default HireLayer stores the original file and returns a link to it in `info_resume.url`. Set `do_not_store_data: true` in a call so the file is not stored.
+- `parse_resume` reads only the file you name. HireLayer stores the resume in your account under its `application_id`, keeps the original file and returns a link to it in `resume.info_resume.url`. On the Enterprise plan, set `do_not_store_data: true` in a call so nothing of the parse is kept.
+- The jobs, resumes and scores the tools process stay in your HireLayer account, in the workspace of the call, so you can score and search them again later.
 - See the [privacy policy](https://hirelayer.co/privacy-policy) and the [security policy](SECURITY.md).
 
 Resumes contain personal data. Use the tools in line with your hiring process and the rules that apply to you, such as GDPR. Scores support human decisions; they don't replace them.
@@ -321,8 +363,10 @@ Resumes contain personal data. Use the tools in line with your hiring process an
 |---|---|
 | `HIRELAYER_API_KEY is not set` | Add the `env` block with your key to the client config, then restart the client. |
 | `HireLayer API returned 401` | The key is wrong or revoked. Copy it again from **Dashboard → API keys**. |
-| `HireLayer API returned 403` | You have used your monthly credits. Wait for the reset or upgrade your plan. |
-| Parsing seems slow | Parsing usually takes about 35 seconds, and longer for scans that need OCR. The server sends progress updates so clients don't time out. |
+| `HireLayer API returned 403 (insufficient_credits)` | You have used your monthly credits. Wait for the reset or upgrade your plan. |
+| `HireLayer API returned 403 (enterprise_plan_required)` | `do_not_store_data` needs the Enterprise plan. Call again without it if storing the resume is fine. |
+| `HireLayer API returned 410` | You run a 1.x version, which calls retired endpoints. Update to the latest version with `npx -y hirelayer-mcp@latest`. |
+| Parsing or scoring seems slow | Parsing usually takes about 30 seconds, and longer for scans that need OCR; scoring 50 resumes takes about a minute. The server sends progress updates so clients don't time out. |
 | `npx` not found or an old Node.js | Install Node.js 20 or later from [nodejs.org](https://nodejs.org). |
 | The file is not found | Use an absolute path, for example `/Users/me/Downloads/cv.pdf` rather than `~/Downloads/cv.pdf`. |
 
@@ -335,13 +379,13 @@ HIRELAYER_API_KEY=your-api-key npx @modelcontextprotocol/inspector npx -y hirela
 ## FAQ
 
 **Is HireLayer an ATS?**
-No. HireLayer provides the AI building blocks of recruiting software: resume parsing, matching, ranking and skills. Use them on their own through MCP, or plug them into your ATS or HR tech product through the [REST API](https://hirelayer.co/api-docs).
+No. HireLayer provides the AI building blocks of recruiting software: resume parsing, scoring and ranking, talent pool search and skills. Use them on their own through MCP, or plug them into your ATS or HR tech product through the [REST API](https://hirelayer.co/api-docs).
 
 **Which language are the results in?**
-The text that HireLayer writes (criteria labels and rationales, match summaries and explanations, ranking rationales) is in French; your assistant translates it when it answers in another language. Skills resolution returns French or English labels.
+The text that HireLayer writes (criteria, summaries, explanations and ranking reasons) is in the job's language, French or English, unless you ask for the other one with `language`. Evidence quotes the resume in its own language. Skills normalization returns French or English labels.
 
 **Which resume languages are supported?**
-The parser detects the main language of each resume and returns it in `info_resume.language`.
+The parser detects the main language of each resume and returns it in `resume.info_resume.language`.
 
 **Can I use the REST API directly?**
 Yes. See the [API reference](https://hirelayer.co/api-docs), the [OpenAPI spec](https://hirelayer.co/openapi.json) and [`llms.txt`](https://hirelayer.co/llms.txt) for agents.

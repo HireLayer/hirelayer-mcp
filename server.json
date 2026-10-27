@@ -2,7 +2,7 @@
   "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
   "name": "co.hirelayer/hirelayer",
   "title": "HireLayer",
-  "description": "Resume and CV parsing, candidate matching and ranking for recruiting and ATS AI agents.",
+  "description": "Resume parsing, scoring and ranking, talent pool search and skills for recruiting AI agents.",
   "websiteUrl": "https://hirelayer.co",
   "repository": {
     "url": "https://github.com/HireLayer/hirelayer-mcp",
@@ -17,12 +17,12 @@
       ]
     }
   ],
-  "version": "1.1.2",
+  "version": "2.0.0",
   "packages": [
     {
       "registryType": "npm",
       "identifier": "hirelayer-mcp",
-      "version": "1.1.2",
+      "version": "2.0.0",
       "transport": {
         "type": "stdio"
       },
