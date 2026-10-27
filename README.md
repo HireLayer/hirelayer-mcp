@@ -45,7 +45,7 @@ The official [Model Context Protocol](https://modelcontextprotocol.io) server fo
 - **Score and rank resumes** (Resume Scorer). Score up to 50 resumes against a job in one call, from 0 to 1, with a verdict, a summary and the evidence for each criterion, best first. Ask for a precise ranking to re-rank the 10 best with a reason each.
 - **Search your talent pool** (Talent Pool Search). Find the resumes already in your HireLayer database closest to a job, around a city if you like.
 - **Recommend jobs** (Job Recommendations). Find your open jobs closest to a candidate.
-- **Normalize skills** (Skills Normalizer). Map free-text skills in French or English to a skills taxonomy with stable IDs.
+- **Normalize skills** (Skills Normalizer). Map free-text skills to a skills taxonomy with stable IDs, named in French or English.
 
 Use it to screen applicants in a chat, build a recruiting agent, enrich an ATS, or prototype HR tech features without writing integration code.
 
@@ -222,7 +222,7 @@ In Docker, `parse_resume` only reads files that you mount into the container. Ot
 | `score_resumes` | Resume Scorer | Scores 1 to 50 resumes against one job, best first: a score from 0 to 1, a verdict, a summary, the required criteria missing and the evidence for each criterion. `precise_ranking` re-ranks the 10 best with a reason each | The job as `job_text` (optionally with your own `criteria`) or a `job_id`, and each resume as `text` or an `application_id` |
 | `search_resumes` | Talent Pool Search | Finds the stored resumes closest to a job, with optional city, radius and date filters. Proximity only: score the ones worth it with `score_resumes` | A `job_id` or `job_text` |
 | `search_jobs` | Job Recommendations | Finds the stored open jobs closest to a resume. Proximity only | An `application_id` or `resume_text` |
-| `normalize_skills` | Skills Normalizer | Maps free-text skills in French or English to taxonomy skills, with their families and domains | Free text, from one skill to a whole skills section |
+| `normalize_skills` | Skills Normalizer | Maps free-text skills to taxonomy skills, with their families and domains, named in French or English | Free text, from one skill to a whole skills section |
 
 HireLayer keeps the resumes, jobs and scores in your HireLayer account, as the REST API does, so a resume or a job-resume pair already processed costs nothing the second time and the two searches have something to search. `normalize_skills` stores nothing. No tool deletes anything or changes your other systems.
 

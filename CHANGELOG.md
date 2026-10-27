@@ -9,7 +9,8 @@ The server now calls the HireLayer API v4 (`https://hirelayer.co/api/v4`), where
 **Breaking changes**
 
 - `match_candidate` and `rank_candidates` are replaced by `score_resumes` (Resume Scorer): 1 to 50 resumes against one job in one call, each with a score from 0 to 1, a verdict, a summary, the required criteria missing or to verify, and the evidence for each criterion, best first. `precise_ranking: true` re-ranks the 10 best against each other with a `ranking_reason`. Give the job as `job_text` (criteria extracted on the way, or your own `criteria`) or as a stored `job_id`, and each resume as `text` or as a stored `application_id`.
-- `resolve_skills` is renamed `normalize_skills` (Skills Normalizer), same input.
+- `resolve_skills` is renamed `normalize_skills` (Skills Normalizer), same input: skills written in any language, names returned in French or English.
+- The prompt `normalize_skills` is renamed `normalize_skills_list`, so that clients do not mistake it for the tool.
 - `extract_job_criteria` sends the job as `job_text` (with optional `title`, `location`, `language`, `job_id`) and returns typed criteria: `criterion_id`, `label`, `type`, `requirement` (`required`, `preferred` or `bonus`), `weight` from 0 to 3 and `threshold`, plus the `job_id` the job is stored under. It is free.
 - `parse_resume` returns the v4 shape: `application_id`, `stored`, `already_stored`, `warnings`, `credits_used`, and the parsed resume in `resume` (full text in `resume.info_resume.text`). A file already stored costs 0 credits. `do_not_store_data` needs the Enterprise plan.
 - The text HireLayer writes (criteria, summaries, explanations) is in the job's language, French or English, instead of always French; `language` overrides it.

@@ -19,7 +19,7 @@ Typical workflows:
 - Read a resume: parse_resume returns contact details, experience, education, languages, skills and the full text in resume.info_resume.text, stored under application_id.
 - Find candidates already in the user's resume database for a job: search_resumes, then score_resumes on the application_ids it returns.
 - Find stored open jobs for a candidate: search_jobs.
-- Normalize skills: normalize_skills maps free text in French or English to taxonomy skills.
+- Normalize skills: normalize_skills maps free-text skills to taxonomy skills, named in French or English.
 
 Resume input:
 - parse_resume reads a local file (file_path, an absolute path), downloads a public file_url, or takes the resume text as resume_text.
@@ -336,7 +336,7 @@ export function createServer(client: HireLayerClient): McpServer {
     {
       title: 'Skills Normalizer',
       description:
-        'Map free-text skills in French or English (one skill, a compound string or a whole skills section) to skills of the HireLayer taxonomy, with their IDs, families and domains. Unmatched parts are listed in unresolved. Costs 1 HireLayer credit.',
+        'Map free-text skills (one skill, a compound string or a whole skills section) to skills of the HireLayer taxonomy, with their IDs, families and domains, named in French or English. Unmatched parts are listed in unresolved. Costs 1 HireLayer credit.',
       inputSchema: {
         text: z.string().min(1).max(5000).describe('Free text containing one or more skills.'),
         language: z.enum(['fr', 'en']).optional().describe('Language of the labels returned: fr (default) or en.'),
@@ -388,7 +388,7 @@ Resume: ${resume}`)
   )
 
   server.registerPrompt(
-    'normalize_skills',
+    'normalize_skills_list',
     {
       title: 'Normalize a skills list',
       description: 'Map a free-text skills section to standard taxonomy skills.',

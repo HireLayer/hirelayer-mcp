@@ -80,14 +80,14 @@ test('exposes server instructions and workflow prompts', async () => {
   for (const name of Object.keys(PRODUCTS)) assert.match(instructions, new RegExp(name))
   assert.doesNotMatch(instructions, /match_candidate|rank_candidates|resolve_skills/)
   const { prompts } = await client.listPrompts()
-  assert.deepEqual(prompts.map((p) => p.name).sort(), ['normalize_skills', 'screen_candidates', 'summarize_resume'])
+  assert.deepEqual(prompts.map((p) => p.name).sort(), ['normalize_skills_list', 'screen_candidates', 'summarize_resume'])
   const { messages } = await client.getPrompt({
     name: 'screen_candidates',
     arguments: { job_description: 'Senior React developer', resumes: '/tmp/a.pdf' },
   })
   assert.match(messages[0].content.text, /Senior React developer/)
   assert.match(messages[0].content.text, /score_resumes/)
-  const skills = await client.getPrompt({ name: 'normalize_skills', arguments: { skills: 'Excel' } })
+  const skills = await client.getPrompt({ name: 'normalize_skills_list', arguments: { skills: 'Excel' } })
   assert.match(skills.messages[0].content.text, /Call normalize_skills/)
 })
 
