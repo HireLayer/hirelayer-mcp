@@ -1,8 +1,8 @@
 {
   "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "hirelayer",
-  "version": "1.1.1",
-  "description": "Resume and CV parsing, job criteria extraction, candidate matching and ranking, and skills normalization for recruiters, hiring managers and HR tech teams.",
+  "version": "2.0.0",
+  "description": "Resume and CV parsing, job criteria extraction, resume scoring and ranking, talent pool search, job recommendations and skills normalization for recruiters, hiring managers and HR tech teams.",
   "author": {
     "name": "HireLayer",
     "email": "contact@hirelayer.co",
@@ -18,6 +18,9 @@
     "candidate screening",
     "candidate matching",
     "candidate ranking",
+    "resume scoring",
+    "talent pool search",
+    "job recommendations",
     "job matching",
     "recruiting",
     "recruitment",
@@ -31,15 +34,16 @@
     "com.openai": {
       "interface": {
         "displayName": "HireLayer",
-        "shortDescription": "Parse resumes, rank candidates",
-        "longDescription": "Screen candidates faster with HireLayer's recruiting tools for resume parsing, candidate matching and candidate ranking.\n\n- Parse resumes and CVs: PDF, Word, images and scanned documents become structured candidate data (contact details, work experience, education, languages, skills and the full text). Attach a resume in the conversation or share a public link.\n- Extract job criteria: a job description becomes weighted hiring criteria, with must-have requirements flagged.\n- Match a candidate to a job: get a fit score from 0 to 1 with an explanation for every criterion, so you see strengths and gaps at a glance.\n- Rank candidates: order up to 10 candidates for the same role in one step, each with a rationale.\n- Normalize skills: map free-text skills in English or French to a skills taxonomy with stable IDs, useful for ATS and HR data.\n\nBuilt for recruiters, hiring managers, talent acquisition teams and HR tech developers. Ask in plain language, for example \"Screen these three resumes against our Senior React job and tell me who to interview\" or \"Which mandatory criteria does this candidate miss?\", and ChatGPT chains the tools and explains the result.\n\nConnect with your HireLayer account. The tools only read and analyse the resumes and job descriptions you send; they never change anything in your systems. Analysis text (criteria, explanations) is written in French and ChatGPT translates it. Scores support human hiring decisions; they never replace them. You can disconnect at any time from your HireLayer dashboard.",
+        "shortDescription": "Parse, score and rank resumes",
+        "longDescription": "Screen candidates faster with HireLayer's recruiting tools: resume parsing, resume scoring and ranking, and search across the candidates and jobs you already have.\n\n- Resume Parser: PDF, Word, images and scanned documents become structured candidate data (contact details, work experience, education, languages, skills and the full text). Attach a resume in the conversation or share a public link.\n- Job Criteria Extractor: a job description becomes typed, weighted hiring criteria, each marked required, preferred or bonus.\n- Resume Scorer: score up to 50 resumes against a job in one step, best first, each with a score from 0 to 1, a verdict, a summary and the evidence for every criterion. A precise ranking re-ranks the top 10 with a reason each.\n- Talent Pool Search: find the candidates already in your HireLayer database closest to a job, around a city if you like.\n- Job Recommendations: find your open jobs closest to a candidate.\n- Skills Normalizer: map free-text skills in English or French to a skills taxonomy with stable IDs, useful for ATS and HR data.\n\nBuilt for recruiters, hiring managers, talent acquisition teams, recruitment agencies and HR tech developers. Ask in plain language, for example \"Screen these three resumes against our Senior React job and tell me who to interview\" or \"Which required criteria does this candidate miss?\", and ChatGPT chains the tools and explains the result. Agencies can keep each client company's jobs and candidates in its own workspace.\n\nConnect with your HireLayer account. HireLayer keeps the resumes, jobs and scores you process in your HireLayer account so you can score and search them again later; the tools never delete anything or change your other systems. Criteria and explanations are written in the job's language (English or French). Scores support human hiring decisions; they never replace them. You can disconnect at any time from your HireLayer dashboard.",
         "developerName": "HireLayer",
         "category": "Business & Operations",
         "capabilities": [
           "Parse resumes and CVs",
           "Extract job criteria",
-          "Match candidates to jobs",
-          "Rank candidates",
+          "Score and rank resumes",
+          "Search your talent pool",
+          "Recommend jobs for a candidate",
           "Normalize skills"
         ],
         "websiteURL": "https://hirelayer.co/mcp",
@@ -78,19 +82,19 @@
               "description": "Extract weighted criteria from a job description",
               "prompt": "Extract the hiring criteria from this job description and tell me which ones are must-haves: Senior React Developer: 5+ years of front-end development including 3+ years with React, strong TypeScript, automated testing (Jest, React Testing Library or Playwright), fluent English; nice to have: Next.js, GraphQL.",
               "tools_triggered": "extract_job_criteria",
-              "expected_behavior": "Calls extract_job_criteria and returns weighted criteria: 5+ years of front-end experience with 3+ years of React, TypeScript, automated testing and fluent English are mandatory; Next.js and GraphQL are nice to have."
+              "expected_behavior": "Calls extract_job_criteria and returns typed, weighted criteria: 5+ years of front-end experience with 3+ years of React, TypeScript, automated testing and fluent English are required; Next.js and GraphQL are preferred or bonus."
             },
             {
               "description": "Rank three candidates for one job",
               "prompt": "Rank these three candidates for the Senior React job and explain the order. Resumes: https://raw.githubusercontent.com/HireLayer/hirelayer-mcp/main/examples/resume-alex-morgan.txt, https://raw.githubusercontent.com/HireLayer/hirelayer-mcp/main/examples/resume-camille-durand.txt, https://raw.githubusercontent.com/HireLayer/hirelayer-mcp/main/examples/resume-sam-lee.txt. Job: Senior React Developer: 5+ years of front-end development including 3+ years with React, strong TypeScript, automated testing (Jest, React Testing Library or Playwright), fluent English; nice to have: Next.js, GraphQL.",
-              "tools_triggered": "parse_resume, rank_candidates",
-              "expected_behavior": "Ranks Alex Morgan first (strong React and TypeScript fit), Camille Durand second (Vue.js rather than React) and Sam Lee third (mostly back end), each with a rationale."
+              "tools_triggered": "parse_resume, score_resumes",
+              "expected_behavior": "Parses the three resumes from their URLs, scores them in one score_resumes call against the job description, and ranks Alex Morgan first (strong React and TypeScript fit), Camille Durand second (Vue.js rather than React) and Sam Lee third (mostly back end), each with a reason."
             },
             {
               "description": "Normalize a free-text skills section",
               "prompt": "Normalize these skills: Pack Office (Word, Excel), React.js, anglais courant.",
-              "tools_triggered": "resolve_skills",
-              "expected_behavior": "Calls resolve_skills and returns three taxonomy skills with their IDs: Microsoft Office (from \"Pack Office (Word, Excel)\"), React and English, with nothing left unresolved."
+              "tools_triggered": "normalize_skills",
+              "expected_behavior": "Calls normalize_skills and returns three taxonomy skills with their IDs: Microsoft Office (from \"Pack Office (Word, Excel)\"), React and English, with nothing left unresolved."
             }
           ],
           "negative": [
@@ -113,11 +117,11 @@
         "commerce_description": "HireLayer does not sell products or process payments in ChatGPT."
       },
       "publication": {
-        "release_notes": "First release: resume and CV parsing (including files attached in ChatGPT), job criteria extraction, candidate matching and ranking with explanations, and skills normalization.",
+        "release_notes": "Resume parsing (including files attached in ChatGPT), job criteria extraction, resume scoring and ranking of up to 50 resumes with the evidence for every criterion, talent pool search, job recommendations and skills normalization. Criteria and explanations come in the job's language, and agencies can keep each client in its own workspace.",
         "translations": {
           "fr-FR": {
             "subtitle": "Analyse de CV et classement",
-            "description": "Triez vos candidats plus vite avec les outils de recrutement HireLayer : analyse de CV (PDF, Word, images, scans), extraction des critères d'une offre d'emploi, score d'adéquation candidat-poste expliqué critère par critère, classement de jusqu'à 10 candidats et normalisation des compétences. Pour les recruteurs, managers et équipes RH. Les outils lisent et analysent uniquement les CV et offres envoyés ; les scores aident la décision humaine sans la remplacer."
+            "description": "Triez vos candidats plus vite avec les outils de recrutement HireLayer : analyse de CV (PDF, Word, images, scans), extraction des critères d'une offre d'emploi, score de jusqu'à 50 CV par offre avec les preuves critère par critère et un classement précis des 10 meilleurs, recherche dans votre CVthèque, offres recommandées pour un candidat et normalisation des compétences. Pour les recruteurs, managers, cabinets et équipes RH. HireLayer conserve les CV, offres et scores dans votre compte pour les retrouver ensuite ; les scores aident la décision humaine sans la remplacer."
           }
         }
       }

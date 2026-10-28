@@ -14,5 +14,6 @@ Security fixes go into the latest release. Update with `npx -y hirelayer-mcp@lat
 
 - The server runs locally over stdio and sends requests only to the HireLayer API (`https://hirelayer.co` by default) over HTTPS. It has no telemetry.
 - Your API key is read from the `HIRELAYER_API_KEY` environment variable and sent only in the `X-API-Key` header to the HireLayer API.
-- `parse_resume` reads the local file passed in `file_path`, or downloads the URL passed in `file_url`, and uploads it to HireLayer for parsing. Set `do_not_store_data: true` to keep HireLayer from storing the file.
+- `parse_resume` reads the local file passed in `file_path`, or downloads the URL passed in `file_url`, and uploads it to HireLayer for parsing. HireLayer stores the parsed resume in your account; on the Enterprise plan, set `do_not_store_data: true` to keep HireLayer from storing anything of the parse.
+- The other tools send the job and resume texts or ids you give them to the HireLayer API. Only `file_path` reads your disk.
 - Treat your API key as a secret: keep it out of version control and revoke it in the HireLayer dashboard if it leaks.
