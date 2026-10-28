@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented here. The project follows [Semantic Versioning](https://semver.org).
 
-## 2.0.0 - Unreleased
+## 2.0.0 - 2026-10-28
 
 The server now calls the HireLayer API v4 (`https://hirelayer.co/api/v4`), where each HireLayer product has one endpoint. The v1 endpoints that 1.x called are retired, so 1.x stops working once they are switched off: update to 2.0.0.
 
