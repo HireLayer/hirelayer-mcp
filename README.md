@@ -41,7 +41,7 @@ The official [Model Context Protocol](https://modelcontextprotocol.io) server fo
 ## What you can do
 
 - **Parse resumes and CVs** (Resume Parser). Turn PDF, Word, image and other files into structured JSON: contact details, work experience, education, languages, skills and the full text. Scanned resumes go through OCR, and the resume language is detected.
-- **Turn a job description into criteria** (Job Criteria Extractor). Get typed, weighted criteria, each marked required, preferred or bonus. Free.
+- **Turn a job description into criteria** (Job Criteria Extractor). Get the typed, weighted criteria the posting states, each marked required, preferred or bonus, in English, French, German, Spanish or Portuguese. Free.
 - **Score and rank resumes** (Resume Scorer). Score up to 50 resumes against a job in one call, from 0 to 1, with a verdict, a summary and the evidence for each criterion, best first. Ask for a precise ranking to re-rank the 10 best with a reason each.
 - **Search your talent pool** (Talent Pool Search). Find the resumes already in your HireLayer database closest to a job, around a city if you like.
 - **Recommend jobs** (Job Recommendations). Find your open jobs closest to a candidate.
@@ -218,8 +218,8 @@ In Docker, `parse_resume` only reads files that you mount into the container. Ot
 | Tool | Product | What it does | Typical input |
 |---|---|---|---|
 | `parse_resume` | Resume Parser | Parses a resume or CV into structured JSON: contact details, experience, education, languages, skills and the full text, stored under an `application_id` | A local `file_path`, a public `file_url` or the `resume_text`. Accepts PDF, DOC, DOCX, ODT, RTF, TXT, HTML, Markdown, PPT, PPTX, ODP, XLS, JPG, PNG or BMP files under 4.5 MB. |
-| `extract_job_criteria` | Job Criteria Extractor | Turns a job description into typed criteria, each with a requirement (required, preferred or bonus) and a weight from 0 to 3, and stores the job under a `job_id` | Job description text |
-| `score_resumes` | Resume Scorer | Scores 1 to 50 resumes against one job, best first: a score from 0 to 1, a verdict, a summary, the required criteria missing and the evidence for each criterion. `precise_ranking` re-ranks the 10 best with a reason each | The job as `job_text` (optionally with your own `criteria`) or a `job_id`, and each resume as `text` or an `application_id` |
+| `extract_job_criteria` | Job Criteria Extractor | Turns a job description into the typed criteria it states, each with a requirement (required, preferred or bonus) and a weight from 0 to 3, and stores the job under a `job_id` | Job description text, at least 30 characters |
+| `score_resumes` | Resume Scorer | Scores 1 to 50 resumes against one job, best first: a score from 0 to 1, a verdict, a summary, the required criteria missing and the evidence for each criterion. `precise_ranking` re-ranks the 10 best with a reason each | The job as `job_text` (optionally with your own `criteria`) or a `job_id`, and each resume as `text` or an `application_id`; at least one resume of 30 characters or more |
 | `search_resumes` | Talent Pool Search | Finds the stored resumes closest to a job, with optional city, radius and date filters. Proximity only: score the ones worth it with `score_resumes` | A `job_id` or `job_text` |
 | `search_jobs` | Job Recommendations | Finds the stored open jobs closest to a resume. Proximity only | An `application_id` or `resume_text` |
 | `normalize_skills` | Skills Normalizer | Maps free-text skills to taxonomy skills, with their families and domains, named in French or English | Free text, from one skill to a whole skills section |
@@ -296,7 +296,7 @@ Trimmed to one resume and one criterion:
 }
 ```
 
-Criteria, summaries and explanations are written in the job's language (French or English) unless you pass `language`; evidence quotes the resume in its own language.
+Criteria, summaries and explanations are written in the job's language (English, French, German, Spanish or Portuguese; English for any other) unless you pass `language`; evidence quotes the resume in its own language.
 
 </details>
 
@@ -382,7 +382,7 @@ HIRELAYER_API_KEY=your-api-key npx @modelcontextprotocol/inspector npx -y hirela
 No. HireLayer provides the AI building blocks of recruiting software: resume parsing, scoring and ranking, talent pool search and skills. Use them on their own through MCP, or plug them into your ATS or HR tech product through the [REST API](https://hirelayer.co/api-docs).
 
 **Which language are the results in?**
-The text that HireLayer writes (criteria, summaries, explanations and ranking reasons) is in the job's language, French or English, unless you ask for the other one with `language`. Evidence quotes the resume in its own language. Skills normalization returns French or English labels.
+The text that HireLayer writes (criteria, summaries, explanations and ranking reasons) is in the job's language: English, French, German, Spanish or Portuguese, and English for a job written in another language. Choose it with `language` (`en`, `fr`, `de`, `es` or `pt`). Evidence quotes the resume in its own language. Skills normalization returns French or English labels.
 
 **Which resume languages are supported?**
 The parser detects the main language of each resume and returns it in `resume.info_resume.language`.

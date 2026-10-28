@@ -58,7 +58,12 @@ export interface WorkspaceOptions extends CallOptions {
   workspace?: string
 }
 
+/** The languages of the Skills Normalizer's names. */
 export type Language = 'fr' | 'en'
+
+/** The languages a job's criteria, summaries and explanations are written in. */
+export const JOB_LANGUAGES = ['en', 'fr', 'de', 'es', 'pt'] as const
+export type JobLanguage = (typeof JOB_LANGUAGES)[number]
 
 export interface CriterionInput {
   label: string
@@ -69,7 +74,7 @@ export interface CriterionInput {
 }
 
 export type ScoreJob =
-  | { text: string; job_id?: string; criteria?: CriterionInput[]; title?: string; language?: Language }
+  | { text: string; job_id?: string; criteria?: CriterionInput[]; title?: string; language?: JobLanguage }
   | { job_id: string }
 
 export type ScoreResume = { reference?: string } & (
@@ -109,7 +114,7 @@ export class HireLayerClient {
 
   /** Job Criteria Extractor: POST /jobs/extract-criteria. */
   extractJobCriteria(
-    body: { text: string; title?: string; location?: string; language?: Language; job_id?: string },
+    body: { text: string; title?: string; location?: string; language?: JobLanguage; job_id?: string },
     options: WorkspaceOptions = {}
   ): Promise<unknown> {
     return this.postJson('/jobs/extract-criteria', body, options)

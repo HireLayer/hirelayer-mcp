@@ -2,8 +2,8 @@ import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js'
 import type { RequestHandlerExtra } from '@modelcontextprotocol/sdk/shared/protocol.js'
 import type { ServerNotification, ServerRequest } from '@modelcontextprotocol/sdk/types.js'
 import { z } from 'zod'
-import { HireLayerClient, HireLayerError, VERSION } from './client.js'
-import type { CriterionInput, Language, ScoreJob, ScoreResume } from './client.js'
+import { HireLayerClient, HireLayerError, JOB_LANGUAGES, VERSION } from './client.js'
+import type { CriterionInput, JobLanguage, ScoreJob, ScoreResume } from './client.js'
 
 type Extra = RequestHandlerExtra<ServerRequest, ServerNotification>
 
@@ -26,7 +26,8 @@ Resume input:
 - score_resumes and search_jobs take resume text directly: when you can already read the resume, pass its text instead of parsing it first. For a resume file, parse it with parse_resume and pass the application_id it returns.
 
 Notes:
-- Criteria, summaries and explanations are written in the job's language (French or English) unless language says otherwise; evidence quotes the resume in its own language.
+- Criteria, summaries and explanations are written in the job's language (English, French, German, Spanish or Portuguese; English for any other) unless language says otherwise; evidence quotes the resume in its own language.
+- A job text holds at least 30 characters, and score_resumes needs at least one resume of 30 characters or more.
 - Job and resume texts are accepted up to 50,000 characters each: truncate longer ones. score_resumes takes up to 50 resumes per call.
 - HireLayer keeps the jobs, resumes and scores in the user's account, as the REST API does, unless the workspace runs without storage. A pair already scored is not evaluated again and costs nothing.
 - Pass do_not_store_data: true to parse_resume when the user does not want HireLayer to keep the resume (Enterprise plan). Such a resume gets no application_id: score it by its text.
@@ -59,11 +60,18 @@ const workspaceArg = z
   )
 
 const languageArg = z
-  .enum(['fr', 'en'])
+  .enum(JOB_LANGUAGES)
   .optional()
-  .describe("Language of the criteria, summaries and explanations: fr or en. Defaults to the job's language.")
+  .describe(
+    "Language of the criteria, summaries and explanations: en, fr, de, es or pt. Defaults to the language of the job's text (English when it is another)."
+  )
 
-const jobText = z.string().min(1).max(50000)
+// The API refuses a job text under 30 characters.
+const jobText = z
+  .string()
+  .trim()
+  .min(30, 'A job text holds at least 30 characters: send the full job description.')
+  .max(50000)
 const resumeText = z.string().min(1).max(50000)
 
 // The format extract_job_criteria returns; criterion_id and source, sent back, are ignored by the API.
@@ -165,9 +173,9 @@ export function createServer(client: HireLayerClient): McpServer {
     {
       title: 'Job Criteria Extractor',
       description:
-        'Turn a job description (any language) into its typed criteria (usually 4 to 10), each with a criterion_id, a label, a type, a requirement (required, preferred or bonus), a weight from 0 to 3 and an optional threshold. The job is stored under job_id, so score_resumes can reuse it. Free, except a new text sent under the job_id of a job already scored: its scores are evaluated again, 1 credit each.',
+        "Turn a job description (any language, at least 30 characters) into the typed criteria it states (usually 4 to 10, fewer for a short posting), in the posting's order, each with a criterion_id, a label, a type, a requirement (required, preferred or bonus), a weight from 0 to 3 and an optional threshold. They are written in the job's language (English, French, German, Spanish or Portuguese; English for any other) unless language says otherwise. The job is stored under job_id, so score_resumes can reuse it. Free, except a new text sent under the job_id of a job already scored: its scores are evaluated again, 1 credit each.",
       inputSchema: {
-        job_text: jobText.describe('Full job description, as published.'),
+        job_text: jobText.describe('Full job description, as published: at least 30 characters.'),
         title: z.string().max(300).optional().describe('Job title.'),
         location: z.string().max(300).optional().describe('Where the job is based.'),
         language: languageArg,
@@ -189,9 +197,9 @@ export function createServer(client: HireLayerClient): McpServer {
     {
       title: 'Resume Scorer',
       description:
-        'Evaluate 1 to 50 resumes against a job, criterion by criterion, and return them best first: for each, a score between 0 and 1, a verdict (highly_relevant, relevant, marginally_relevant or not_relevant), a summary, the required criteria missing or to verify, and the evidence for each criterion. Give the job as job_text (its criteria are extracted on the way, or pass your own criteria) or as the job_id of a stored job. Give each resume as text or as the application_id of a stored resume. With precise_ranking, the 10 best are re-ranked against each other, each with a ranking_reason. The result is decision support for a human recruiter, not an automated hiring decision. Costs 1 HireLayer credit per resume evaluated, and 1 more with precise_ranking; a pair already scored costs 0.',
+        "Evaluate 1 to 50 resumes against a job, criterion by criterion, and return them best first: for each, a score between 0 and 1, a verdict (highly_relevant, relevant, marginally_relevant or not_relevant), a summary, the required criteria missing or to verify, and the evidence for each criterion. Give the job as job_text (its criteria are extracted on the way, or pass your own criteria) or as the job_id of a stored job. Give each resume as text or as the application_id of a stored resume; at least one resume of the call holds 30 characters or more. Summaries and explanations are written in the job's language. With precise_ranking, the 10 best are re-ranked against each other, each with a ranking_reason. The result is decision support for a human recruiter, not an automated hiring decision. Costs 1 HireLayer credit per resume evaluated, and 1 more with precise_ranking; a pair already scored costs 0.",
       inputSchema: {
-        job_text: jobText.optional().describe('The job description. Give job_text or job_id.'),
+        job_text: jobText.optional().describe('The job description, at least 30 characters. Give job_text or job_id.'),
         job_id: JOB_ID_RULE.optional().describe(
           'Alone: a job already stored, such as the job_id extract_job_criteria returned. With job_text: store the job under your own id; a new text or new criteria for a job already scored evaluate its stored scores again, 1 credit each.'
         ),
@@ -204,7 +212,7 @@ export function createServer(client: HireLayerClient): McpServer {
             "The job's own criteria, in the format extract_job_criteria returns; they replace the extraction. Only with job_text."
           ),
         language: languageArg.describe(
-          "Language of the criteria, summaries and explanations: fr or en. Only with job_text; defaults to the job's language."
+          "Language of the criteria, summaries and explanations: en, fr, de, es or pt. Only with job_text; defaults to the language of the job's text (English when it is another)."
         ),
         resumes: z
           .array(
@@ -253,10 +261,10 @@ export function createServer(client: HireLayerClient): McpServer {
     {
       title: 'Talent Pool Search',
       description:
-        "Find the resumes of the user's resume database closest to a job, by proximity only: application_ids with a similarity between 0 and 1, best first, and whether each is already scored for the job. No evaluation: pass the ones worth it to score_resumes. Give the job as the job_id of a stored job or as job_text (the job is then stored). Costs 1 HireLayer credit per search.",
+        "Find the resumes of the user's resume database closest to a job, by proximity only: application_ids with a similarity between 0 and 1, best first, and whether each is already scored for the job. No evaluation: pass the ones worth it to score_resumes. Give the job as the job_id of a stored job or as job_text (at least 30 characters; the job is then stored). Costs 1 HireLayer credit per search.",
       inputSchema: {
         job_id: JOB_ID_RULE.optional().describe('A stored job. Give job_id or job_text.'),
-        job_text: jobText.optional().describe('A job description not stored yet.'),
+        job_text: jobText.optional().describe('A job description not stored yet, at least 30 characters.'),
         limit: z.number().int().min(1).max(500).optional().describe('How many resumes to return, 50 by default.'),
         city: z
           .string()
@@ -412,7 +420,7 @@ function scoreJob(args: {
   job_text?: string
   job_id?: string
   criteria?: CriterionInput[]
-  language?: Language
+  language?: JobLanguage
 }): ScoreJob {
   if (args.job_text !== undefined) {
     return { text: args.job_text, job_id: args.job_id, criteria: args.criteria, language: args.language }

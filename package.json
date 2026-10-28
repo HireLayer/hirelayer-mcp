@@ -1,6 +1,6 @@
 {
   "name": "hirelayer-mcp",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "mcpName": "co.hirelayer/hirelayer",
   "description": "Official HireLayer MCP server: resume and CV parsing, job criteria extraction, resume scoring and ranking, talent pool search, job recommendations and skills normalization for AI agents in Claude, Cursor, VS Code and other MCP clients.",
   "type": "module",
