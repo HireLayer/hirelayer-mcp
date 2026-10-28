@@ -13,4 +13,4 @@ Clone the repository (or download the files), then ask your AI assistant:
 
 > Screen the three resumes in `examples/` against `examples/job-senior-react-developer.md` and give me a shortlist.
 
-The assistant scores the three resumes against the job in one `score_resumes` call (the job's criteria are extracted on the way, for free) and explains the ranking. The run uses 3 to 6 of the 50 free monthly credits: 1 per resume scored, plus 1 per resume file the assistant parses with `parse_resume` rather than reading it itself. Asking again for the same job and resumes costs nothing.
+The assistant scores the three resumes against the job in one `score_resumes` call (the job's criteria are extracted on the way, for free) and explains the ranking. The run uses 3 to 7 of the 50 free monthly credits: 1 per resume scored, 1 more when the assistant asks for the precise ranking, plus 1 per resume file it parses with `parse_resume` rather than reading it itself. Asking again for the same job and resumes costs nothing.

@@ -12,6 +12,9 @@ export const MAX_RESUME_BYTES = 4.5 * 1024 * 1024
 // 502 and 503 are transient and never charged, so one retry is safe.
 const RETRYABLE_STATUSES = new Set([502, 503])
 const MAX_RETRY_DELAY_MS = 10_000
+// A scoring call whose evaluations outlast about 100 seconds answers 202 with a results_url,
+// read until no score is pending, for this long at most.
+const MAX_SCORING_WAIT_MS = 10 * 60_000
 
 export class HireLayerError extends Error {
   constructor(
@@ -20,7 +23,9 @@ export class HireLayerError extends Error {
     /** The code of the API error, such as insufficient_credits; undefined when the API sent none. */
     readonly code?: string,
     /** The input at fault, such as job.criteria, when the API names one. */
-    readonly param?: string
+    readonly param?: string,
+    /** The id of the failed call, to quote to HireLayer support. */
+    readonly requestId?: string
   ) {
     super(message)
     this.name = 'HireLayerError'
@@ -33,6 +38,8 @@ export interface ClientOptions {
   fetch?: typeof fetch
   /** Delay before retrying a 502 or 503 when the API sends no Retry-After. */
   retryDelayMs?: number
+  /** Delay between two reads of a scoring call still running (202). */
+  pollIntervalMs?: number
 }
 
 export interface ResumeSource {
@@ -75,12 +82,14 @@ export class HireLayerClient {
   private readonly baseUrl: string
   private readonly fetch: typeof fetch
   private readonly retryDelayMs: number
+  private readonly pollIntervalMs: number
 
-  constructor({ apiKey, baseUrl, fetch: fetchImpl, retryDelayMs }: ClientOptions) {
+  constructor({ apiKey, baseUrl, fetch: fetchImpl, retryDelayMs, pollIntervalMs }: ClientOptions) {
     this.apiKey = apiKey
     this.baseUrl = (baseUrl || DEFAULT_BASE_URL).replace(/\/+$/, '')
     this.fetch = fetchImpl ?? globalThis.fetch
     this.retryDelayMs = retryDelayMs ?? 2_000
+    this.pollIntervalMs = pollIntervalMs ?? 5_000
   }
 
   /** Resume Parser: POST /resumes/parse. */
@@ -106,12 +115,27 @@ export class HireLayerClient {
     return this.postJson('/jobs/extract-criteria', body, options)
   }
 
-  /** Resume Scorer: POST /resumes/score. */
-  scoreResumes(
+  /**
+   * Resume Scorer: POST /resumes/score. When the evaluations outlast the API's wait (202),
+   * reads results_url until no score is pending and returns that read: the call's resumes, best first.
+   */
+  async scoreResumes(
     body: { job: ScoreJob; resumes: ScoreResume[]; precise_ranking?: boolean },
     options: WorkspaceOptions = {}
   ): Promise<unknown> {
-    return this.postJson('/resumes/score', body, options)
+    const answer = await this.postJson('/resumes/score', body, options)
+    const resultsPath = pendingResultsPath(answer)
+    if (!resultsPath) return answer
+    const deadline = Date.now() + MAX_SCORING_WAIT_MS
+    while (Date.now() < deadline) {
+      await sleep(this.pollIntervalMs, options.signal)
+      const read = await this.request(resultsPath, { method: 'GET', signal: options.signal }, options.workspace)
+      if (!hasPendingScores(read)) return read
+    }
+    return {
+      ...(answer as object),
+      next_step: 'HireLayer is still scoring these resumes. Call score_resumes again later with the same job and resumes: the resumes already scored come back at no extra cost.',
+    }
   }
 
   /** Talent Pool Search: POST /resumes/search. */
@@ -179,7 +203,7 @@ export class HireLayerClient {
     } catch {
       // Keep the raw text: gateways can answer with HTML or plain text.
     }
-    if (!response.ok) throw apiError(response.status, payload)
+    if (!response.ok) throw apiError(response.status, payload, response.headers.get('hirelayer-request-id'))
     return payload
   }
 
@@ -224,12 +248,14 @@ export class HireLayerClient {
 }
 
 /**
- * The API answers errors as {"error": {"code", "message", "param", "doc_url"}}; gateways
+ * The API answers errors as {"error": {"code", "message", "param", "doc_url"}, "request_id"}; gateways
  * in front of it can still answer with HTML or plain text, kept as they come.
  */
-function apiError(status: number, payload: unknown): HireLayerError {
-  const error =
-    payload && typeof payload === 'object' && 'error' in payload ? (payload as { error: unknown }).error : null
+function apiError(status: number, payload: unknown, headerRequestId: string | null): HireLayerError {
+  const body = payload && typeof payload === 'object' ? (payload as { error?: unknown; request_id?: unknown }) : null
+  const error = body?.error
+  const requestId = typeof body?.request_id === 'string' ? body.request_id : headerRequestId || undefined
+  const support = requestId ? ` (request_id ${requestId})` : ''
   if (error && typeof error === 'object') {
     const { code, message, param } = error as { code?: unknown; message?: unknown; param?: unknown }
     const errorCode = typeof code === 'string' ? code : undefined
@@ -237,14 +263,37 @@ function apiError(status: number, payload: unknown): HireLayerError {
     const label = [errorCode, errorParam && `param ${errorParam}`].filter(Boolean).join(', ')
     const text = typeof message === 'string' ? message : JSON.stringify(error)
     return new HireLayerError(
-      `HireLayer API returned ${status}${label ? ` (${label})` : ''}: ${text}${errorHint(status, errorCode, text)}`,
+      `HireLayer API returned ${status}${label ? ` (${label})` : ''}: ${text}${errorHint(status, errorCode, text)}${support}`,
       status,
       errorCode,
-      errorParam
+      errorParam,
+      requestId
     )
   }
   const detail = typeof payload === 'string' ? payload.slice(0, 500) : JSON.stringify(payload)
-  return new HireLayerError(`HireLayer API returned ${status}: ${detail}${errorHint(status, undefined, detail)}`, status)
+  return new HireLayerError(
+    `HireLayer API returned ${status}: ${detail}${errorHint(status, undefined, detail)}${support}`,
+    status,
+    undefined,
+    undefined,
+    requestId
+  )
+}
+
+/** The path of results_url under /api/v4 when a scoring call answered 202 without a webhook, else null. */
+function pendingResultsPath(answer: unknown): string | null {
+  if (!answer || typeof answer !== 'object') return null
+  const { status, results_url: resultsUrl, webhook_url: webhookUrl } = answer as Record<string, unknown>
+  if (status !== 'pending' || typeof resultsUrl !== 'string' || webhookUrl) return null
+  // Read through the client's own base URL: results_url names the production host.
+  const url = new URL(resultsUrl)
+  if (!url.pathname.startsWith(`${API_PREFIX}/`)) return null
+  return `${url.pathname.slice(API_PREFIX.length)}${url.search}`
+}
+
+function hasPendingScores(read: unknown): boolean {
+  const data = read && typeof read === 'object' ? (read as { data?: unknown }).data : undefined
+  return Array.isArray(data) && data.some((score) => (score as { evaluation_status?: unknown })?.evaluation_status === 'pending')
 }
 
 function errorHint(status: number, code: string | undefined, detail: string): string {

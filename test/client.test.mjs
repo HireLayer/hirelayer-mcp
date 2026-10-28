@@ -114,6 +114,60 @@ test('error messages say how to fix a bad key, missing credits or a plan limit',
   })
 })
 
+test('error messages carry the request_id of the failed call', async () => {
+  const { fetch } = recorder([
+    {
+      status: 500,
+      body: JSON.stringify({
+        error: { code: 'internal_error', message: 'Internal error: retry later.', param: null, doc_url: null },
+        request_id: 'req_1',
+      }),
+    },
+    { status: 502, body: '<html>Bad gateway</html>', headers: { 'HireLayer-Request-Id': 'req_2' } },
+    { status: 502, body: '<html>Bad gateway</html>', headers: { 'HireLayer-Request-Id': 'req_2' } },
+  ])
+  const client = new HireLayerClient({ apiKey: 'k', fetch, retryDelayMs: 0 })
+  await assert.rejects(client.normalizeSkills('Excel'), (error) => {
+    assert.equal(error.requestId, 'req_1')
+    assert.match(error.message, /Internal error: retry later\. \(request_id req_1\)$/)
+    return true
+  })
+  await assert.rejects(client.normalizeSkills('Excel'), (error) => {
+    assert.equal(error.requestId, 'req_2')
+    assert.match(error.message, /\(request_id req_2\)$/)
+    return true
+  })
+})
+
+test('scoreResumes reads results_url until no score is pending after a 202', async () => {
+  const pending = {
+    status: 'pending',
+    request_id: 'req_1',
+    job_id: 'job_1',
+    resumes_count: 2,
+    webhook_url: null,
+    results_url: 'https://hirelayer.co/api/v4/jobs/job_1/scores?request_id=req_1',
+  }
+  const running = { job_id: 'job_1', data: [{ application_id: 'a', evaluation_status: 'completed' }, { application_id: 'b', evaluation_status: 'pending' }] }
+  const done = { job_id: 'job_1', data: [{ application_id: 'a', evaluation_status: 'completed' }, { application_id: 'b', evaluation_status: 'completed' }] }
+  const { calls, fetch } = recorder([
+    { status: 202, body: JSON.stringify(pending) },
+    { body: JSON.stringify(running) },
+    { body: JSON.stringify(done) },
+  ])
+  const client = new HireLayerClient({ apiKey: 'k', baseUrl: 'http://localhost:3000', fetch, pollIntervalMs: 0 })
+  const result = await client.scoreResumes(
+    { job: { job_id: 'job_1' }, resumes: [{ application_id: 'a' }, { application_id: 'b' }] },
+    { workspace: 'acme' }
+  )
+  assert.deepEqual(result, done)
+  // Read through the client's own base URL, in the same workspace.
+  assert.equal(calls[1].url, 'http://localhost:3000/api/v4/jobs/job_1/scores?request_id=req_1')
+  assert.equal(calls[1].init.method, 'GET')
+  assert.equal(calls[2].init.headers['HireLayer-Workspace'], 'acme')
+  assert.equal(calls.length, 3)
+})
+
 test('non-JSON error bodies from gateways are kept as text', async () => {
   const { fetch } = recorder([{ status: 504, body: '<html>Gateway Timeout</html>' }])
   const client = new HireLayerClient({ apiKey: 'k', fetch })

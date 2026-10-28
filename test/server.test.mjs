@@ -249,6 +249,7 @@ test('inconsistent inputs are refused before any API call', async () => {
     ['parse_resume', { file_url: 'https://x.test/a.pdf', resume_text: 'Jane' }, /exactly one/],
     ['score_resumes', { job_id: 'job_1', criteria: [{ label: 'React' }], resumes: [{ text: 'cv' }] }, /criteria go with job_text/],
     ['score_resumes', { resumes: [{ text: 'cv' }] }, /job_text or job_id/],
+    ['score_resumes', { job_id: 'job_1', language: 'en', resumes: [{ text: 'cv' }] }, /a stored job keeps its own language/],
     ['score_resumes', { job_text: 'job', resumes: [{ reference: 'jane' }] }, /resumes\[0\] needs text or application_id/],
     ['search_resumes', { job_id: 'job_1', job_text: 'job' }, /exactly one of job_id or job_text/],
     ['search_resumes', { job_id: 'job_1', radius_km: 10 }, /radius_km needs city/],
@@ -276,6 +277,15 @@ test('a workspace or id outside the API rule is refused', async () => {
     assert.match(result.content[0].text, /must contain letters, digits/)
   }
   assert.equal(calls.length, 0)
+})
+
+test('score_resumes and extract_job_criteria name what costs credits', async () => {
+  const client = await connect(async () => new Response('{}'))
+  const { tools } = await client.listTools()
+  const tool = (name) => tools.find((t) => t.name === name)
+  assert.match(tool('score_resumes').description, /1 more with precise_ranking/)
+  assert.match(tool('score_resumes').inputSchema.properties.precise_ranking.description, /1 credit more for the call/)
+  assert.match(tool('extract_job_criteria').description, /Free, except a new text sent under the job_id of a job already scored/)
 })
 
 test('API errors come back as tool errors with the code and a hint', async () => {

@@ -328,8 +328,8 @@ Criteria, summaries and explanations are written in the job's language (French o
 | Tool | Credits |
 |---|---|
 | `parse_resume` | 1 per resume, 0 for a file already stored |
-| `extract_job_criteria` | Free |
-| `score_resumes` | 1 per resume evaluated, 0 for a job-resume pair already scored; the precise ranking is included |
+| `extract_job_criteria` | Free (a new text for a job already scored evaluates its scores again, 1 credit each) |
+| `score_resumes` | 1 per resume evaluated, 0 for a job-resume pair already scored; 1 more per call with `precise_ranking` |
 | `search_resumes`, `search_jobs` | 1 per search |
 | `normalize_skills` | 1 |
 

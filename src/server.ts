@@ -31,7 +31,7 @@ Notes:
 - HireLayer keeps the jobs, resumes and scores in the user's account, as the REST API does, unless the workspace runs without storage. A pair already scored is not evaluated again and costs nothing.
 - Pass do_not_store_data: true to parse_resume when the user does not want HireLayer to keep the resume (Enterprise plan). Such a resume gets no application_id: score it by its text.
 - When the user recruits for several client companies, pass the client's workspace id so each client's jobs and candidates stay apart. Reuse the exact id the user gives: a new id creates a new workspace.
-- Credits: parse_resume 1 (0 for a file already stored), extract_job_criteria free, score_resumes 1 per resume evaluated, search_resumes and search_jobs 1 per search, normalize_skills 1. A parse takes about 30 seconds; scoring 50 resumes about a minute.
+- Credits: parse_resume 1 (0 for a file already stored), extract_job_criteria free (a new text under a job_id already scored re-evaluates its scores, 1 credit each), score_resumes 1 per resume evaluated and 1 more with precise_ranking, search_resumes and search_jobs 1 per search, normalize_skills 1. A parse takes about 30 seconds; scoring 50 resumes about a minute.
 - Scores support human hiring decisions; they never replace them.`
 
 // The ids HireLayer accepts for resumes, jobs and workspaces.
@@ -165,7 +165,7 @@ export function createServer(client: HireLayerClient): McpServer {
     {
       title: 'Job Criteria Extractor',
       description:
-        'Turn a job description (any language) into its typed criteria (usually 4 to 10), each with a criterion_id, a label, a type, a requirement (required, preferred or bonus), a weight from 0 to 3 and an optional threshold. The job is stored under job_id, so score_resumes can reuse it. Free.',
+        'Turn a job description (any language) into its typed criteria (usually 4 to 10), each with a criterion_id, a label, a type, a requirement (required, preferred or bonus), a weight from 0 to 3 and an optional threshold. The job is stored under job_id, so score_resumes can reuse it. Free, except a new text sent under the job_id of a job already scored: its scores are evaluated again, 1 credit each.',
       inputSchema: {
         job_text: jobText.describe('Full job description, as published.'),
         title: z.string().max(300).optional().describe('Job title.'),
@@ -189,11 +189,11 @@ export function createServer(client: HireLayerClient): McpServer {
     {
       title: 'Resume Scorer',
       description:
-        'Evaluate 1 to 50 resumes against a job, criterion by criterion, and return them best first: for each, a score between 0 and 1, a verdict (highly_relevant, relevant, marginally_relevant or not_relevant), a summary, the required criteria missing or to verify, and the evidence for each criterion. Give the job as job_text (its criteria are extracted on the way, or pass your own criteria) or as the job_id of a stored job. Give each resume as text or as the application_id of a stored resume. With precise_ranking, the 10 best are re-ranked against each other, each with a ranking_reason. The result is decision support for a human recruiter, not an automated hiring decision. Costs 1 HireLayer credit per resume evaluated; a pair already scored costs 0.',
+        'Evaluate 1 to 50 resumes against a job, criterion by criterion, and return them best first: for each, a score between 0 and 1, a verdict (highly_relevant, relevant, marginally_relevant or not_relevant), a summary, the required criteria missing or to verify, and the evidence for each criterion. Give the job as job_text (its criteria are extracted on the way, or pass your own criteria) or as the job_id of a stored job. Give each resume as text or as the application_id of a stored resume. With precise_ranking, the 10 best are re-ranked against each other, each with a ranking_reason. The result is decision support for a human recruiter, not an automated hiring decision. Costs 1 HireLayer credit per resume evaluated, and 1 more with precise_ranking; a pair already scored costs 0.',
       inputSchema: {
         job_text: jobText.optional().describe('The job description. Give job_text or job_id.'),
         job_id: JOB_ID_RULE.optional().describe(
-          'Alone: a job already stored, such as the job_id extract_job_criteria returned. With job_text: store the job under your own id.'
+          'Alone: a job already stored, such as the job_id extract_job_criteria returned. With job_text: store the job under your own id; a new text or new criteria for a job already scored evaluate its stored scores again, 1 credit each.'
         ),
         criteria: z
           .array(criterion)
@@ -203,7 +203,9 @@ export function createServer(client: HireLayerClient): McpServer {
           .describe(
             "The job's own criteria, in the format extract_job_criteria returns; they replace the extraction. Only with job_text."
           ),
-        language: languageArg,
+        language: languageArg.describe(
+          "Language of the criteria, summaries and explanations: fr or en. Only with job_text; defaults to the job's language."
+        ),
         resumes: z
           .array(
             z.object({
@@ -221,7 +223,7 @@ export function createServer(client: HireLayerClient): McpServer {
           .boolean()
           .optional()
           .describe(
-            'Re-rank the 10 best against each other and explain each place in ranking_reason. Included in the price.'
+            'Re-rank the 10 best against each other and explain each place in ranking_reason. 1 credit more for the call.'
           ),
         workspace: workspaceArg,
       },
@@ -417,6 +419,10 @@ function scoreJob(args: {
   }
   if (args.criteria !== undefined) {
     throw new HireLayerError('criteria go with job_text, never alone.')
+  }
+  // The API refuses it next to a job_id alone: a stored job keeps its language.
+  if (args.language !== undefined) {
+    throw new HireLayerError('language goes with job_text: a stored job keeps its own language.')
   }
   if (args.job_id === undefined) {
     throw new HireLayerError('Give job_text or job_id.')
