@@ -2,7 +2,7 @@
 
 All notable changes to this project are documented here. The project follows [Semantic Versioning](https://semver.org).
 
-## 2.1.0 - Unreleased
+## 2.1.0 - 2026-10-28
 
 - Criteria, summaries and explanations come in five languages: `language` of `extract_job_criteria` and `score_resumes` takes `en`, `fr`, `de`, `es` or `pt` (it was `fr` or `en`). Left out, it is the language of the job's text, and English for a text in any other language. `normalize_skills` keeps French and English names.
 - `extract_job_criteria` returns the criteria the posting states, in its order (usually 4 to 10, fewer for a short posting).
