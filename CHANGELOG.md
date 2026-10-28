@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented here. The project follows [Semantic Versioning](https://semver.org).
 
+## 2.1.0 - Unreleased
+
+- Criteria, summaries and explanations come in five languages: `language` of `extract_job_criteria` and `score_resumes` takes `en`, `fr`, `de`, `es` or `pt` (it was `fr` or `en`). Left out, it is the language of the job's text, and English for a text in any other language. `normalize_skills` keeps French and English names.
+- `extract_job_criteria` returns the criteria the posting states, in its order (usually 4 to 10, fewer for a short posting).
+- A job text (`job_text` of `extract_job_criteria`, `score_resumes` and `search_resumes`) holds at least 30 characters: a shorter one is refused before any call. `score_resumes` needs at least one resume of 30 characters or more, as the API requires.
+
 ## 2.0.0 - 2026-10-28
 
 The server now calls the HireLayer API v4 (`https://hirelayer.co/api/v4`), where each HireLayer product has one endpoint. The v1 endpoints that 1.x called are retired, so 1.x stops working once they are switched off: update to 2.0.0.
